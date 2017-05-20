@@ -1,0 +1,11 @@
+*.user
+*.suo
+*.DotSettings
+Bin/
+obj/
+TestResults
+*.log
+*.VisualState.xml
+TestResult.xml
+packages/
+.vs
