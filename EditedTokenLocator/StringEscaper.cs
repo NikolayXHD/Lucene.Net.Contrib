@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Lucent.Net.Contrib
 {
 	/// <summary>
-	/// Выполняет отделение Escape-последовательностей
+	/// Extracts escaped sequences
 	/// </summary>
-	internal class StringEscaper : IEnumerator<EscapedChar>
+	public class StringEscaper : IEnumerator<EscapedChar>
 	{
 		public static readonly HashSet<char> SpecialChars = new HashSet<char>
 		{
@@ -95,5 +96,39 @@ namespace Lucent.Net.Contrib
 		private readonly string _query;
 		private const char EscapeCharacter = '\\';
 		private static readonly string EscapeString = new string(EscapeCharacter, 1);
+
+		public static string Unescape(string value)
+		{
+			var resultBuilder = new StringBuilder();
+
+			var escaper = new StringEscaper(value);
+			while (escaper.MoveNext())
+			{
+				var current = escaper.Current;
+
+				if (current.Value.Length == 1)
+					resultBuilder.Append(current.Value);
+				else
+					resultBuilder.Append(current.Value.Substring(1));
+			}
+
+			return resultBuilder.ToString();
+		}
+
+		public static string Escape(string value)
+		{
+			var resultBuilder = new StringBuilder();
+
+			for (int i = 0; i < value.Length; i++)
+			{
+				var c = value[i];
+				if (SpecialChars.Contains(c))
+					resultBuilder.Append(EscapeCharacter);
+
+				resultBuilder.Append(c);
+			}
+
+			return resultBuilder.ToString();
+		}
 	}
 }

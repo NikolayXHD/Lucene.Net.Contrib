@@ -1,6 +1,6 @@
 namespace Lucent.Net.Contrib
 {
-	internal class EscapedChar
+	public class EscapedChar
 	{
 		public EscapedChar(string value, int position)
 		{
