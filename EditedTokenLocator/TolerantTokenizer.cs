@@ -55,17 +55,17 @@ namespace Lucent.Net.Contrib
 					}
 					else if (tokenType.Is(TokenType.Quote))
 					{
-						if (_openOperators.Count > 0 && _openOperators.Peek().Type == TokenType.Quote)
+						if (_openOperators.Count > 0 && _openOperators.Peek().Type.Is(TokenType.Quote))
 						{
 							// close quote
-							var token = createToken(tokenType);
+							var token = createToken(TokenType.CloseQuote);
 							_openOperators.Pop();
 							updateCurrentField();
 							token.NextTokenField = _currentField;
 						}
 						else
 						{
-							var token = createToken(tokenType);
+							var token = createToken(TokenType.OpeningQuote);
 							_openOperators.Push(token);
 							token.NextTokenField = _currentField;
 						}

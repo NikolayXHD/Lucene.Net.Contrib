@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Lucent.Net.Contrib
@@ -33,18 +34,27 @@ namespace Lucent.Net.Contrib
 				if (leftToken.Type.Is(TokenType.Boolean) && leftToken.Value.Length > 1)
 					return leftToken;
 
-				return tokenOnEmptyInput(caret, leftToken.NextTokenField);
+				return tokenOnEmptyInput(tokens, caret, leftToken.NextTokenField);
 			}
 
-			return tokenOnEmptyInput(caret, leftToken?.NextTokenField);
+			return tokenOnEmptyInput(tokens, caret, leftToken?.NextTokenField);
 		}
 
-		private static Token tokenOnEmptyInput(int caret, string field = null)
+		private static Token tokenOnEmptyInput(List<Token> tokens, int caret, string field = null)
 		{
-			if (!string.IsNullOrEmpty(field))
-				return new Token(caret, string.Empty, TokenType.FieldValue, field);
+			var lastQuote = tokens.LastOrDefault(_ => _.Position < caret && _.Type.Is(TokenType.Quote));
 
-			return new Token(caret, string.Empty, TokenType.Field, field);
+			Token result;
+
+			if (lastQuote?.Type.Is(TokenType.OpeningQuote) == true || !string.IsNullOrEmpty(field))
+				result = new Token(caret, string.Empty, TokenType.FieldValue, field);
+			else
+				result = new Token(caret, string.Empty, TokenType.Field, field);
+
+			result.SetPrevious(tokens.LastOrDefault(_ => _.Position + _.Value.Length <= result.Position));
+			result.SetNext(tokens.FirstOrDefault(_ => _.Position >= result.Position + result.Value.Length));
+
+			return result;
 		}
 	}
 }

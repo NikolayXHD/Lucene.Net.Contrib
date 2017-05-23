@@ -19,7 +19,9 @@ namespace Lucent.Net.Contrib
 
 		To = 1 << 10,
 
-		Quote = 1 << 11,
+		Quote = OpeningQuote | CloseQuote,
+		OpeningQuote = 1 << 11,
+		CloseQuote = 1 << 12,
 
 		Boolean = And | Or | Not,
 		And = 1 << 14,
