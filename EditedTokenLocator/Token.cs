@@ -35,7 +35,7 @@ namespace Lucent.Net.Contrib
 			if (Type == TokenType.Field)
 				return $"{Position:D3}: {Value}";
 
-			return $"{Position:D3}: {Value}\t{Type} of: {ParentField}";
+			return $"{Position:D3}: {Value}    {Type} of: {ParentField}";
 		}
 
 		public bool IsLeftToCaret(int caret)
