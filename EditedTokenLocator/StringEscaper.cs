@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Lucent.Net.Contrib
+namespace Lucene.Net.Contrib
 {
 	/// <summary>
 	/// Extracts escaped sequences

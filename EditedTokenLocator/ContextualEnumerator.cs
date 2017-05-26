@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Lucent.Net.Contrib
+namespace Lucene.Net.Contrib
 {
 	public sealed class ContextualEnumerator<T> : IEnumerator<T>
 	{

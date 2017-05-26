@@ -1,4 +1,4 @@
-namespace Lucent.Net.Contrib
+namespace Lucene.Net.Contrib
 {
 	public class Token
 	{

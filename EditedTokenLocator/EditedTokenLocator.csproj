@@ -7,8 +7,8 @@
     <ProjectGuid>{482239D1-673C-4181-A2DD-F9E5B1A2FD9B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Lucent.Net.Contrib</RootNamespace>
-    <AssemblyName>Lucent.Net.Contrib.EditedTokenLocator</AssemblyName>
+    <RootNamespace>Lucene.Net.Contrib</RootNamespace>
+    <AssemblyName>Lucene.Net.Contrib.EditedTokenLocator</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Lucent.Net.Contrib
+namespace Lucene.Net.Contrib
 {
 	internal static class Extensions
 	{

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lucent.Net.Contrib
+namespace Lucene.Net.Contrib
 {
 	[Flags]
 	public enum TokenType

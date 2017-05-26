@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Lucent.Net.Contrib
+namespace Lucene.Net.Contrib
 {
 	public static class EditedTokenLocator
 	{
