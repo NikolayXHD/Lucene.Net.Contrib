@@ -70,7 +70,10 @@ namespace Lucene.Net.Contrib
 							token.NextTokenField = _currentField;
 						}
 					}
-					else if (tokenType.Is(TokenType.Boolean | TokenType.Modifier | TokenType.Wildcard | TokenType.Colon))
+					else if (tokenType.Is(TokenType.Modifier | TokenType.Wildcard | TokenType.Colon) ||
+						tokenType.Is(TokenType.Boolean) && 
+						// To avoid recognizing AND in ANDY
+						(StringEscaper.SpecialChars.Contains(_substring[0]) || nextIsTerminator()))
 					{
 						var token = createToken(tokenType);
 						token.NextTokenField = _currentField;
