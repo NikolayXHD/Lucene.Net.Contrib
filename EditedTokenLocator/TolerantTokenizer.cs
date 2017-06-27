@@ -21,6 +21,8 @@ namespace Lucene.Net.Contrib
 				_position = _context.Current.Position;
 				_substring += _context.Current.Value;
 
+				bool beforeTerminator = nextIsTerminator();
+
 				var tokenTypeNullable = TokenFilter.GetTokenType(_substring);
 				if (tokenTypeNullable.HasValue)
 				{
@@ -73,7 +75,7 @@ namespace Lucene.Net.Contrib
 					else if (tokenType.Is(TokenType.Modifier | TokenType.Wildcard | TokenType.Colon) ||
 						tokenType.Is(TokenType.Boolean) && 
 						// To avoid recognizing AND in ANDY
-						(StringEscaper.SpecialChars.Contains(_substring[0]) || nextIsTerminator()))
+						(StringEscaper.SpecialChars.Contains(_substring[0]) || beforeTerminator))
 					{
 						var token = createToken(tokenType);
 						token.NextTokenField = _currentField;
@@ -98,20 +100,42 @@ namespace Lucene.Net.Contrib
 					_currentField = Tokens[Tokens.Count - 1].ParentField;
 					token.NextTokenField = _currentField;
 				}
-				else if (nextIsTerminator())
+				else if (beforeTerminator && prevIsModifier())
 				{
-					Token token;
-					
-					// add value
-					if (Tokens.TryGetLast()?.Type.Is(TokenType.Modifier) == true)
-						token = createToken(TokenType.ModifierValue);
-					else
-						token = createToken(TokenType.FieldValue);
-					
+					var token = createToken(TokenType.ModifierValue);
+
 					updateCurrentField();
 					token.NextTokenField = _currentField;
 				}
+				else if (beforeTerminator)
+				{
+					var token = createToken(TokenType.FieldValue);
+
+					updateCurrentField();
+					token.NextTokenField = _currentField;
+				}
+				else if (isCjk())
+				{
+					var token = createToken(TokenType.FieldValue);
+					token.NextTokenField = _currentField;
+				}
 			}
+		}
+
+		private bool prevIsModifier()
+		{
+			return Tokens.TryGetLast()?.Type.Is(TokenType.Modifier) == true;
+		}
+
+		private bool isCjk()
+		{
+			if (_context.Current.Value.Length == 0)
+				return false;
+
+			if (_context.Current.Value[_context.Current.Value.Length - 1].IsCjk())
+				return true;
+
+			return false;
 		}
 
 		private void updateCurrentField()
@@ -182,6 +206,7 @@ namespace Lucene.Net.Contrib
 			previous?.SetNext(result);
 
 			Tokens.Add(result);
+
 			_substring = string.Empty;
 			_start = _position;
 

@@ -60,7 +60,22 @@ namespace Lucene.Net.Contrib
 
 		public bool IsConnectedToCaret(int caret)
 		{
-			return TouchesCaret(caret) && !Type.Is(TokenType.Open | TokenType.Close | TokenType.Colon | TokenType.Quote);
+			if (!TouchesCaret(caret))
+				return false;
+
+			if (Type.Is(TokenType.Open | TokenType.Close | TokenType.Colon | TokenType.Quote))
+				return false;
+
+			if (Type.Is(TokenType.FieldValue))
+			{
+				if (Position == caret && Value[0].IsCjk())
+					return false;
+
+				if (Position + Value.Length == caret && Value[Value.Length - 1].IsCjk())
+					return false;
+			}
+
+			return true;
 		}
 	}
 }
