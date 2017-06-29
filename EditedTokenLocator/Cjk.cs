@@ -30,34 +30,40 @@ namespace Lucene.Net.Contrib
 		/// <summary>
 		/// Диапазоны иероглифов.
 		/// Аббревиатура CJK в названии расшифровывается как chinese japanese korean.
-		/// https://docs.microsoft.com/en-us/dotnet/standard/base-types/character-classes-in-regular-expressions
+		/// https://en.wikipedia.org/wiki/Unicode_block
 		/// 
 		/// Диапазоны упорядочены по-возрастанию для оптимизации поиска
 		/// </summary>
 		private static readonly List<CharRange> CjkCharacterRanges = new List<CharRange>
 		{
-			new CharRange('\u1100', '\u11FF'), // IsHangulJamo
-			new CharRange('\u2E80', '\u2EFF'), // IsCJKRadicalsSupplement
+			new CharRange('\u1100', '\u11FF'), // Hangul Jamo
+			new CharRange('\u2E80', '\u2EFF'), // CJK Radicals Supplement
 
-			// new CharRange('\u3000', '\u303F'), // IsCJKSymbolsandPunctuation
+			// new CharRange('\u3000', '\u303F'), // CJK Symbols and Punctuation
 			// new CharRange('\u3040', '\u309F'), // Hiragana
 			// new CharRange('\u30A0', '\u30FF'), // Katakana
 			// new CharRange('\u3100', '\u312F'), // Bopomofo
 			// new CharRange('\u3130', '\u318F'), // Hangul Compatibility Jamo
 			// new CharRange('\u3190', '\u319F'), // Kanbun
 			// new CharRange('\u31A0', '\u31BF'), // Bopomofo Extended
-			new CharRange('\u3000', '\u31BF'), // слиты 7 подряд идущих диапазона выше
+			// new CharRange('\u31C0', '\u31EF'), // CJK Strokes
+			// new CharRange('\u31F0', '\u31FF'), // Katakana Phonetic Extensions
+			// new CharRange('\u3200', '\u32FF'), // Enclosed CJK Letters and Months
+			// new CharRange('\u3300', '\u33FF'), // CJK Compatibility
+			// new CharRange('\u3400', '\u4DBF'), // CJK Unified Ideographs ExtensionA
+			// new CharRange('\u4DC0', '\u4DFF'), // Yijing Hexagram Symbols
+			// new CharRange('\u4E00', '\u9FFF'), // CJK Unified Ideographs
+			new CharRange('\u3000', '\u9FFF'), // слиты 14 подряд идущих диапазонов выше
+			
+			new CharRange('\uA960', '\uA97F'), // Hangul Jamo Extended-A
 
-			//new CharRange('\u31F0', '\u31FF'), // Katakana Phonetic Extensions
-			//new CharRange('\u3200', '\u32FF'), // IsEnclosedCJKLettersandMonths
-			//new CharRange('\u3300', '\u33FF'), // IsCJKCompatibility
-			//new CharRange('\u3400', '\u4DBF'), // IsCJKUnifiedIdeographsExtensionA
-			new CharRange('\u31F0', '\u4DBF'), // слиты 4 подряд идущих диапазона выше
+			// new CharRange('\uAC00', '\uD7AF'), // Hangul Syllables
+			// new CharRange('\uD7B0', '\uD7FF'), // Hangul Jamo Extended-B
+			new CharRange('\uAC00', '\uD7FF'), // слиты 2 подряд идущих диапазона выше
 
-			new CharRange('\u4E00', '\u9FFF'), // IsCJKUnifiedIdeographs
-			new CharRange('\uAC00', '\uD7AF'), // IsHangulSyllables
-			new CharRange('\uF900', '\uFAFF'), // IsCJKCompatibilityIdeographs
-			new CharRange('\uFE30', '\uFE4F'), // IsCJKCompatibilityForms
+
+			new CharRange('\uF900', '\uFAFF'), // CJK Compatibility Ideographs
+			new CharRange('\uFE30', '\uFE4F'), // CJK Compatibility Forms
 			new CharRange('\uFF00', '\uFFEF') // Halfwidth and Fullwidth Forms
 		};
 
