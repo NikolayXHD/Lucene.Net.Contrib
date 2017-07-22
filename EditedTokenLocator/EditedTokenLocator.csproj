@@ -41,7 +41,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cjk.cs" />
+    <Compile Include="Cj.cs" />
     <Compile Include="EditedTokenLocator.cs" />
     <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="Extensions.cs" />

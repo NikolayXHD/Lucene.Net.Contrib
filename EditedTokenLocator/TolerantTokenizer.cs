@@ -132,7 +132,7 @@ namespace Lucene.Net.Contrib
 			if (_context.Current.Value.Length == 0)
 				return false;
 
-			if (_context.Current.Value[_context.Current.Value.Length - 1].IsCjk())
+			if (_context.Current.Value[_context.Current.Value.Length - 1].IsCj())
 				return true;
 
 			return false;

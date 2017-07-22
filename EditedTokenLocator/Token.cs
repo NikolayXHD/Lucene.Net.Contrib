@@ -68,10 +68,10 @@ namespace Lucene.Net.Contrib
 
 			if (Type.Is(TokenType.FieldValue))
 			{
-				if (Position == caret && Value[0].IsCjk())
+				if (Position == caret && Value[0].IsCj())
 					return false;
 
-				if (Position + Value.Length == caret && Value[Value.Length - 1].IsCjk())
+				if (Position + Value.Length == caret && Value[Value.Length - 1].IsCj())
 					return false;
 			}
 
