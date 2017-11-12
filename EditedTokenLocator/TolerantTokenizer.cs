@@ -77,7 +77,14 @@ namespace Lucene.Net.Contrib
 						// To avoid recognizing AND in ANDY
 						(StringEscaper.SpecialChars.Contains(_substring[0]) || beforeTerminator))
 					{
+						var previous = Tokens.TryGetLast();
+
+						// adjacent wildcard tokens are related to the same field
+						if (tokenType.Is(TokenType.Wildcard) && previous != null && previous.Position + previous.Value.Length == _start)
+							_currentField = previous.ParentField;
+
 						var token = createToken(tokenType);
+
 						token.NextTokenField = _currentField;
 					}
 					else if (_openOperators.TryPeek()?.Type.Is(TokenType.OpenRange) == true && tokenType.Is(TokenType.To))
