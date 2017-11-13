@@ -22,15 +22,25 @@ namespace Lucene.Net.Contrib
 				_substring += _context.Current.Value;
 
 				bool beforeTerminator = nextIsTerminator();
-
 				var tokenTypeNullable = TokenFilter.GetTokenType(_substring);
-				if (tokenTypeNullable.HasValue)
+
+				if (_isRegexOpen)
+				{
+					// regex body token lasts until regex delimiter or End Of String
+					if (!_context.HasNext || TokenFilter.GetTokenType(_context.Next.Value) == TokenType.RegexDelimiter)
+					{
+						var token = addToken(TokenType.RegexBody);
+						token.NextTokenField = _currentField;
+						_isRegexOpen = false;
+					}
+				}
+				else if (tokenTypeNullable.HasValue)
 				{
 					var tokenType = tokenTypeNullable.Value;
 
 					if (tokenType.Is(TokenType.Open))
 					{
-						var token = createToken(tokenType);
+						var token = addToken(tokenType);
 						_openOperators.Push(token);
 						token.NextTokenField = _currentField;
 					}
@@ -39,7 +49,7 @@ namespace Lucene.Net.Contrib
 						if (tokenType.IsLegalCloserOf(_openOperators.TryPeek()?.Type))
 						{
 							// close parenthesis
-							var token = createToken(tokenType);
+							var token = addToken(tokenType);
 							_openOperators.Pop();
 							updateCurrentField();
 							token.NextTokenField = _currentField;
@@ -51,24 +61,48 @@ namespace Lucene.Net.Contrib
 							else
 								SyntaxErrors.Add($"Unexpected {_substring} at {_start} closing {_openOperators.Peek().Value} at {_openOperators.Peek().Position}");
 
-							var token = createToken(tokenType);
+							var token = addToken(tokenType);
 							token.NextTokenField = _currentField;
 						}
 					}
-					else if (tokenType.Is(TokenType.Quote))
+					else if (tokenType.Is(TokenType.Quote | TokenType.RegexDelimiter))
 					{
-						if (_openOperators.Count > 0 && _openOperators.Peek().Type.Is(TokenType.Quote))
+						TokenType generalType;
+						TokenType openType;
+						TokenType closeType;
+						bool isRegex;
+
+						if (tokenType.Is(TokenType.Quote))
+						{
+							generalType = TokenType.Quote;
+							openType = TokenType.OpenQuote;
+							closeType = TokenType.CloseQuote;
+							isRegex = false;
+						}
+						else
+						{
+							generalType = TokenType.RegexDelimiter;
+							openType = TokenType.OpenRegex;
+							closeType = TokenType.CloseRegex;
+							isRegex = true;
+						}
+
+						if (_openOperators.Count > 0 && _openOperators.Peek().Type.Is(generalType))
 						{
 							// close quote
-							var token = createToken(TokenType.CloseQuote);
+							var token = addToken(closeType);
 							_openOperators.Pop();
 							updateCurrentField();
 							token.NextTokenField = _currentField;
 						}
 						else
 						{
-							var token = createToken(TokenType.OpeningQuote);
+							var token = addToken(openType);
 							_openOperators.Push(token);
+
+							if (isRegex)
+								_isRegexOpen = true;
+
 							token.NextTokenField = _currentField;
 						}
 					}
@@ -83,14 +117,14 @@ namespace Lucene.Net.Contrib
 						if (tokenType.Is(TokenType.Wildcard) && previous != null && previous.Position + previous.Value.Length == _start)
 							_currentField = previous.ParentField;
 
-						var token = createToken(tokenType);
+						var token = addToken(tokenType);
 
 						token.NextTokenField = _currentField;
 					}
 					else if (_openOperators.TryPeek()?.Type.Is(TokenType.OpenRange) == true && tokenType.Is(TokenType.To))
 					{
 						// interval extremes separator
-						var token = createToken(tokenType);
+						var token = addToken(tokenType);
 						token.NextTokenField = _currentField;
 					}
 				}
@@ -103,27 +137,27 @@ namespace Lucene.Net.Contrib
 				else if (nextIsColon())
 				{
 					// add field
-					var token = createToken(TokenType.Field);
+					var token = addToken(TokenType.Field);
 					_currentField = Tokens[Tokens.Count - 1].ParentField;
 					token.NextTokenField = _currentField;
 				}
 				else if (beforeTerminator && prevIsModifier())
 				{
-					var token = createToken(TokenType.ModifierValue);
+					var token = addToken(TokenType.ModifierValue);
 
 					updateCurrentField();
 					token.NextTokenField = _currentField;
 				}
 				else if (beforeTerminator)
 				{
-					var token = createToken(TokenType.FieldValue);
+					var token = addToken(TokenType.FieldValue);
 
 					updateCurrentField();
 					token.NextTokenField = _currentField;
 				}
 				else if (isCjk())
 				{
-					var token = createToken(TokenType.FieldValue);
+					var token = addToken(TokenType.FieldValue);
 					token.NextTokenField = _currentField;
 				}
 			}
@@ -184,7 +218,7 @@ namespace Lucene.Net.Contrib
 			return _context.HasNext && TokenFilter.GetTokenType(_context.Next.Value)?.Is(TokenType.Colon) == true;
 		}
 
-		private Token createToken(TokenType tokenType)
+		private Token addToken(TokenType tokenType)
 		{
 			string field;
 			var previous = Tokens.TryGetLast();
@@ -223,7 +257,7 @@ namespace Lucene.Net.Contrib
 
 
 		private readonly Stack<Token> _openOperators = new Stack<Token>();
-
+		private bool _isRegexOpen;
 		private string _currentField;
 		private int _start;
 		private int _position;

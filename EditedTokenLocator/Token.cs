@@ -63,7 +63,7 @@ namespace Lucene.Net.Contrib
 			if (!TouchesCaret(caret))
 				return false;
 
-			if (Type.Is(TokenType.Open | TokenType.Close | TokenType.Colon | TokenType.Quote))
+			if (Type.Is(TokenType.Open | TokenType.Close | TokenType.Colon | TokenType.Quote | TokenType.RegexDelimiter))
 				return false;
 
 			if (Type.Is(TokenType.FieldValue))

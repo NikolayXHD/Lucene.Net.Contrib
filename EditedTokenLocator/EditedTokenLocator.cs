@@ -42,11 +42,11 @@ namespace Lucene.Net.Contrib
 
 		private static Token tokenOnEmptyInput(List<Token> tokens, int caret, string field = null)
 		{
-			var lastQuote = tokens.LastOrDefault(_ => _.Position < caret && _.Type.Is(TokenType.Quote));
+			var lastQuote = tokens.LastOrDefault(_ => _.Position < caret && _.Type.Is(TokenType.Quote | TokenType.RegexDelimiter));
 
 			Token result;
 
-			if (lastQuote?.Type.Is(TokenType.OpeningQuote) == true || !string.IsNullOrEmpty(field))
+			if (lastQuote?.Type.Is(TokenType.OpenQuote | TokenType.OpenRegex) == true || !string.IsNullOrEmpty(field))
 				result = new Token(caret, string.Empty, TokenType.FieldValue, field);
 			else
 				result = new Token(caret, string.Empty, TokenType.Field, field);

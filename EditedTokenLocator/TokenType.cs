@@ -19,18 +19,24 @@ namespace Lucene.Net.Contrib
 
 		To = 1 << 10,
 
-		Quote = OpeningQuote | CloseQuote,
-		OpeningQuote = 1 << 11,
+		Quote = OpenQuote | CloseQuote,
+		OpenQuote = 1 << 11,
 		CloseQuote = 1 << 12,
 
+		RegexDelimiter = OpenRegex | CloseRegex,
+		OpenRegex = 1 << 13,
+		CloseRegex = 1 << 14,
+
 		Boolean = And | Or | Not,
-		And = 1 << 14,
-		Or = 1 << 15,
-		Not = 1 << 16,
+		And = 1 << 16,
+		Or = 1 << 17,
+		Not = 1 << 18,
 
 		Wildcard = AnyChar | AnyString,
 		AnyChar = 1 << 19,
 		AnyString = 1 << 20,
+
+		RegexBody = 1 << 21,
 
 		Modifier = BoostModifier | SlopeModifier,
 		BoostModifier = 1 << 23,
@@ -52,14 +58,14 @@ namespace Lucene.Net.Contrib
 
 		public static bool IsLegalCloserOf(this TokenType closer, TokenType? opener)
 		{
-			return opener.HasValue && closer.Is(TokenType.Close) && LegalOpenersByCloser[closer].Contains(opener.Value);
+			return opener.HasValue && closer.Is(TokenType.Close) && _legalOpenersByCloser[closer].Contains(opener.Value);
 		}
 
-		private static readonly Dictionary<TokenType, List<TokenType>> LegalOpenersByCloser = new Dictionary<TokenType, List<TokenType>>
+		private static readonly Dictionary<TokenType, List<TokenType>> _legalOpenersByCloser = new Dictionary<TokenType, List<TokenType>>
 		{
-			{ TokenType.CloseOpenRange, new List<TokenType> { TokenType.OpenOpenRange, TokenType.OpenClosedRange } },
-			{ TokenType.CloseClosedRange, new List<TokenType> { TokenType.OpenClosedRange, TokenType.OpenOpenRange } },
-			{ TokenType.CloseGroup, new List<TokenType> { TokenType.OpenGroup } }
+			[TokenType.CloseOpenRange] = new List<TokenType> { TokenType.OpenOpenRange, TokenType.OpenClosedRange },
+			[TokenType.CloseClosedRange] = new List<TokenType> { TokenType.OpenClosedRange, TokenType.OpenOpenRange },
+			[TokenType.CloseGroup] = new List<TokenType> { TokenType.OpenGroup }
 		};
 	}
 }

@@ -11,7 +11,7 @@ namespace Lucene.Net.Contrib
 	{
 		public static readonly HashSet<char> SpecialChars = new HashSet<char>
 		{
-			'&', '|', '+', '-', '!', '(', ')', '{', '}', '[', ']', '^' , '\"', '~', '*', '?', ':', '\\'
+			'&', '|', '+', '-', '!', '(', ')', '{', '}', '[', ']', '^' , '\"', '~', '*', '?', ':', '\\', '/'
 		};
 
 		public static readonly HashSet<char> TwoSymbolOperators = new HashSet<char>

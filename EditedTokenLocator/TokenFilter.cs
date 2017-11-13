@@ -4,42 +4,44 @@ namespace Lucene.Net.Contrib
 {
 	internal static class TokenFilter
 	{
-		private static readonly Dictionary<string, TokenType> TokensDictionary = new Dictionary<string, TokenType>
+		private static readonly Dictionary<string, TokenType> _tokensDictionary = new Dictionary<string, TokenType>
 		{
-			{"AND", TokenType.And },
-			{"&&", TokenType.And },
-			{"+", TokenType.And },
+			{ "AND", TokenType.And },
+			{ "&&", TokenType.And },
+			{ "+", TokenType.And },
 
-			{"OR", TokenType.Or },
-			{"||", TokenType.Or },
+			{ "OR", TokenType.Or },
+			{ "||", TokenType.Or },
 
-			{"NOT", TokenType.Not },
-			{"!", TokenType.Not },
-			{"-", TokenType.Not },
+			{ "NOT", TokenType.Not },
+			{ "!", TokenType.Not },
+			{ "-", TokenType.Not },
 
-			{"^", TokenType.BoostModifier },
-			{"~", TokenType.SlopeModifier },
+			{ "^", TokenType.BoostModifier },
+			{ "~", TokenType.SlopeModifier },
 
-			{"?", TokenType.AnyChar },
-			{"*", TokenType.AnyString },
+			{ "?", TokenType.AnyChar },
+			{ "*", TokenType.AnyString },
 
-			{"(", TokenType.OpenGroup },
-			{"{", TokenType.OpenOpenRange },
-			{"[", TokenType.OpenClosedRange },
+			{ "(", TokenType.OpenGroup },
+			{ "{", TokenType.OpenOpenRange },
+			{ "[", TokenType.OpenClosedRange },
 
-			{")", TokenType.CloseGroup },
-			{"}", TokenType.CloseOpenRange },
-			{"]", TokenType.CloseClosedRange },
+			{ ")", TokenType.CloseGroup },
+			{ "}", TokenType.CloseOpenRange },
+			{ "]", TokenType.CloseClosedRange },
 
-			{"TO", TokenType.To },
-			{":", TokenType.Colon },
-			{"\"", TokenType.Quote }
+			{ "TO", TokenType.To },
+			{ ":", TokenType.Colon },
+
+			{ "\"", TokenType.Quote },
+			{ "/", TokenType.RegexDelimiter }
 		};
 
 		public static TokenType? GetTokenType(string s)
 		{
 			TokenType result;
-			if (TokensDictionary.TryGetValue(s, out result))
+			if (_tokensDictionary.TryGetValue(s, out result))
 				return result;
 
 			return null;
