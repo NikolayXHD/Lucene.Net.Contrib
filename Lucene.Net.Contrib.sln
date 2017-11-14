@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lucene.Net.Contrib", "Lucene.Net.Contrib", "{0DE878BB-4070-4139-978A-883AC52E882F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net", "Lucene.Net\Lucene.Net.csproj", "{B2F2E4A9-EA26-4B2F-BE99-194EDE0302B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net.Analysis.Common", "Lucene.Net.Analysis.Common\Lucene.Net.Analysis.Common.csproj", "{681184FA-C73D-4861-B603-D248860AD91B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net.Misc", "Lucene.Net.Misc\Lucene.Net.Misc.csproj", "{0FE0DAAD-ED00-401E-BA03-8BBE52961E49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net.Queries", "Lucene.Net.Queries\Lucene.Net.Queries.csproj", "{C38AD3AC-3E41-4973-B288-A8CB5FAA5932}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net.QueryParser", "Lucene.Net.QueryParser\Lucene.Net.QueryParser.csproj", "{1C488345-2468-41B9-A273-A1E7C762F3EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucene.Net.Sandbox", "Lucene.Net.Sandbox\Lucene.Net.Sandbox.csproj", "{2778CC7A-D377-47AB-B81D-7C52543EFE0B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B2F2E4A9-EA26-4B2F-BE99-194EDE0302B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2F2E4A9-EA26-4B2F-BE99-194EDE0302B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2F2E4A9-EA26-4B2F-BE99-194EDE0302B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2F2E4A9-EA26-4B2F-BE99-194EDE0302B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{681184FA-C73D-4861-B603-D248860AD91B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{681184FA-C73D-4861-B603-D248860AD91B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{681184FA-C73D-4861-B603-D248860AD91B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{681184FA-C73D-4861-B603-D248860AD91B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FE0DAAD-ED00-401E-BA03-8BBE52961E49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FE0DAAD-ED00-401E-BA03-8BBE52961E49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FE0DAAD-ED00-401E-BA03-8BBE52961E49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FE0DAAD-ED00-401E-BA03-8BBE52961E49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C38AD3AC-3E41-4973-B288-A8CB5FAA5932}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C38AD3AC-3E41-4973-B288-A8CB5FAA5932}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C38AD3AC-3E41-4973-B288-A8CB5FAA5932}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C38AD3AC-3E41-4973-B288-A8CB5FAA5932}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C488345-2468-41B9-A273-A1E7C762F3EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C488345-2468-41B9-A273-A1E7C762F3EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C488345-2468-41B9-A273-A1E7C762F3EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C488345-2468-41B9-A273-A1E7C762F3EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2778CC7A-D377-47AB-B81D-7C52543EFE0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2778CC7A-D377-47AB-B81D-7C52543EFE0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2778CC7A-D377-47AB-B81D-7C52543EFE0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2778CC7A-D377-47AB-B81D-7C52543EFE0B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B2F2E4A9-EA26-4B2F-BE99-194EDE0302B9} = {0DE878BB-4070-4139-978A-883AC52E882F}
+		{681184FA-C73D-4861-B603-D248860AD91B} = {0DE878BB-4070-4139-978A-883AC52E882F}
+		{0FE0DAAD-ED00-401E-BA03-8BBE52961E49} = {0DE878BB-4070-4139-978A-883AC52E882F}
+		{C38AD3AC-3E41-4973-B288-A8CB5FAA5932} = {0DE878BB-4070-4139-978A-883AC52E882F}
+		{1C488345-2468-41B9-A273-A1E7C762F3EE} = {0DE878BB-4070-4139-978A-883AC52E882F}
+		{2778CC7A-D377-47AB-B81D-7C52543EFE0B} = {0DE878BB-4070-4139-978A-883AC52E882F}
+	EndGlobalSection
+EndGlobal
