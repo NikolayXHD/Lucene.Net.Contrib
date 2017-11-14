@@ -39,25 +39,23 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Lucene.Net, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Lucene.Net.4.8.0-beta00005\lib\net45\Lucene.Net.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Lucene.Net">
+      <HintPath>..\bin\Lucene.Net.dll</HintPath>
     </Reference>
-    <Reference Include="Lucene.Net.Analysis.Common, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Lucene.Net.Analysis.Common.4.8.0-beta00005\lib\net45\Lucene.Net.Analysis.Common.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Lucene.Net.Analysis.Common">
+      <HintPath>..\bin\Lucene.Net.Analysis.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Lucene.Net.Misc, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Lucene.Net.Misc.4.8.0-beta00005\lib\net45\Lucene.Net.Misc.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Lucene.Net.Misc">
+      <HintPath>..\bin\Lucene.Net.Misc.dll</HintPath>
     </Reference>
-    <Reference Include="Lucene.Net.Queries, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Lucene.Net.Queries.4.8.0-beta00005\lib\net45\Lucene.Net.Queries.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Lucene.Net.Queries">
+      <HintPath>..\bin\Lucene.Net.Queries.dll</HintPath>
     </Reference>
-    <Reference Include="Lucene.Net.Suggest, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Lucene.Net.Suggest.4.8.0-beta00005\lib\net45\Lucene.Net.Suggest.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Lucene.Net.QueryParser">
+      <HintPath>..\bin\Lucene.Net.QueryParser.dll</HintPath>
+    </Reference>
+    <Reference Include="Lucene.Net.Sandbox">
+      <HintPath>..\bin\Lucene.Net.Sandbox.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -77,9 +75,6 @@
     <Compile Include="Token.cs" />
     <Compile Include="TokenFilter.cs" />
     <Compile Include="TokenType.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
