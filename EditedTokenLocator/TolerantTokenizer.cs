@@ -26,8 +26,18 @@ namespace Lucene.Net.Contrib
 
 				if (_isRegexOpen)
 				{
+					// empty regex body
+					if (tokenTypeNullable == TokenType.RegexDelimiter)
+					{
+						// close quote
+						var token = addToken(TokenType.RegexDelimiter);
+						_openOperators.Pop();
+						updateCurrentField();
+						token.NextTokenField = _currentField;
+						_isRegexOpen = false;
+					}
 					// regex body token lasts until regex delimiter or End Of String
-					if (!_context.HasNext || TokenFilter.GetTokenType(_context.Next.Value) == TokenType.RegexDelimiter)
+					else if (!_context.HasNext || TokenFilter.GetTokenType(_context.Next.Value) == TokenType.RegexDelimiter)
 					{
 						var token = addToken(TokenType.RegexBody);
 						token.NextTokenField = _currentField;
