@@ -23,15 +23,15 @@ namespace Lucene.Net.Contrib
 			if (leftToken?.IsConnectedToCaret(caret) != true && rightToken?.IsConnectedToCaret(caret) == true)
 				return rightToken;
 
-			if (leftToken?.Type.Is(TokenType.Modifier) == true && leftToken.TouchesCaret(caret))
+			if (leftToken?.Type.IsAny(TokenType.Modifier) == true && leftToken.TouchesCaret(caret))
 				return new Token(caret, string.Empty, TokenType.ModifierValue, leftToken.ParentField);
 
 			if (leftToken?.TouchesCaret(caret) == true)
 			{
-				if (leftToken.Type.Is(TokenType.Field | TokenType.FieldValue | TokenType.Modifier))
+				if (leftToken.Type.IsAny(TokenType.Field | TokenType.FieldValue | TokenType.Modifier))
 					return leftToken;
 
-				if (leftToken.Type.Is(TokenType.Boolean) && leftToken.Value.Length > 1)
+				if (leftToken.Type.IsAny(TokenType.Boolean) && leftToken.Value.Length > 1)
 					return leftToken;
 
 				return tokenOnEmptyInput(tokens, caret, leftToken.NextTokenField);
@@ -42,11 +42,11 @@ namespace Lucene.Net.Contrib
 
 		private static Token tokenOnEmptyInput(List<Token> tokens, int caret, string field = null)
 		{
-			var lastQuote = tokens.LastOrDefault(_ => _.Position < caret && _.Type.Is(TokenType.Quote | TokenType.RegexDelimiter));
+			var lastQuote = tokens.LastOrDefault(_ => _.Position < caret && _.Type.IsAny(TokenType.Quote | TokenType.RegexDelimiter));
 
 			Token result;
 
-			if (lastQuote?.Type.Is(TokenType.OpenQuote | TokenType.OpenRegex) == true || !string.IsNullOrEmpty(field))
+			if (lastQuote?.Type.IsAny(TokenType.OpenQuote | TokenType.OpenRegex) == true || !string.IsNullOrEmpty(field))
 				result = new Token(caret, string.Empty, TokenType.FieldValue, field);
 			else
 				result = new Token(caret, string.Empty, TokenType.Field, field);

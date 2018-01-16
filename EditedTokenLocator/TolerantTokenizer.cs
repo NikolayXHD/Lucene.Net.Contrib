@@ -48,13 +48,13 @@ namespace Lucene.Net.Contrib
 				{
 					var tokenType = tokenTypeNullable.Value;
 
-					if (tokenType.Is(TokenType.Open))
+					if (tokenType.IsAny(TokenType.Open))
 					{
 						var token = addToken(tokenType);
 						_openOperators.Push(token);
 						token.NextTokenField = _currentField;
 					}
-					else if (tokenType.Is(TokenType.Close))
+					else if (tokenType.IsAny(TokenType.Close))
 					{
 						if (tokenType.IsLegalCloserOf(_openOperators.TryPeek()?.Type))
 						{
@@ -75,14 +75,14 @@ namespace Lucene.Net.Contrib
 							token.NextTokenField = _currentField;
 						}
 					}
-					else if (tokenType.Is(TokenType.Quote | TokenType.RegexDelimiter))
+					else if (tokenType.IsAny(TokenType.Quote | TokenType.RegexDelimiter))
 					{
 						TokenType generalType;
 						TokenType openType;
 						TokenType closeType;
 						bool isRegex;
 
-						if (tokenType.Is(TokenType.Quote))
+						if (tokenType.IsAny(TokenType.Quote))
 						{
 							generalType = TokenType.Quote;
 							openType = TokenType.OpenQuote;
@@ -97,7 +97,7 @@ namespace Lucene.Net.Contrib
 							isRegex = true;
 						}
 
-						if (_openOperators.Count > 0 && _openOperators.Peek().Type.Is(generalType))
+						if (_openOperators.Count > 0 && _openOperators.Peek().Type.IsAny(generalType))
 						{
 							// close quote
 							var token = addToken(closeType);
@@ -116,22 +116,35 @@ namespace Lucene.Net.Contrib
 							token.NextTokenField = _currentField;
 						}
 					}
-					else if (tokenType.Is(TokenType.Modifier | TokenType.Wildcard | TokenType.Colon) ||
-						tokenType.Is(TokenType.Boolean) && 
+					else if (tokenType.IsAny(TokenType.Modifier | TokenType.Colon) || tokenType.IsAny(TokenType.Boolean) &&
 						// To avoid recognizing AND in ANDY
 						(StringEscaper.SpecialChars.Contains(_substring[0]) || beforeTerminator))
 					{
-						var previous = Tokens.TryGetLast();
-
-						// adjacent wildcard tokens are related to the same field
-						if (tokenType.Is(TokenType.Wildcard) && previous != null && previous.Position + previous.Value.Length == _start)
-							_currentField = previous.ParentField;
-
 						var token = addToken(tokenType);
-
 						token.NextTokenField = _currentField;
 					}
-					else if (_openOperators.TryPeek()?.Type.Is(TokenType.OpenRange) == true && tokenType.Is(TokenType.To))
+					else if (tokenType.IsAny(TokenType.Wildcard))
+					{
+						if (tokenType.IsAny(TokenType.AnyString) && nextIsColon())
+						{
+							// add field
+							var token = addToken(TokenType.Field);
+							_currentField = Tokens[Tokens.Count - 1].ParentField;
+							token.NextTokenField = _currentField;
+						}
+						else
+						{
+							var previous = Tokens.TryGetLast();
+
+							// adjacent wildcard tokens are related to the same field
+							if (previous != null && previous.Position + previous.Value.Length == _start)
+								_currentField = previous.ParentField;
+
+							var token = addToken(tokenType);
+							token.NextTokenField = _currentField;
+						}
+					}
+					else if (_openOperators.TryPeek()?.Type.IsAny(TokenType.OpenRange) == true && tokenType.IsAny(TokenType.To))
 					{
 						// interval extremes separator
 						var token = addToken(tokenType);
@@ -175,7 +188,7 @@ namespace Lucene.Net.Contrib
 
 		private bool prevIsModifier()
 		{
-			return Tokens.TryGetLast()?.Type.Is(TokenType.Modifier) == true;
+			return Tokens.TryGetLast()?.Type.IsAny(TokenType.Modifier) == true;
 		}
 
 		private bool isCjk()
@@ -225,7 +238,7 @@ namespace Lucene.Net.Contrib
 
 		private bool nextIsColon()
 		{
-			return _context.HasNext && TokenFilter.GetTokenType(_context.Next.Value)?.Is(TokenType.Colon) == true;
+			return _context.HasNext && TokenFilter.GetTokenType(_context.Next.Value)?.IsAny(TokenType.Colon) == true;
 		}
 
 		private Token addToken(TokenType tokenType)
@@ -239,7 +252,7 @@ namespace Lucene.Net.Contrib
 					field = _substring;
 					break;
 				case TokenType.FieldValue:
-					if (previous?.Type.Is(TokenType.Modifier) == true)
+					if (previous?.Type.IsAny(TokenType.Modifier) == true)
 						field = null;
 					else
 						field = _currentField;

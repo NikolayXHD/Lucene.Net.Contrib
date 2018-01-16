@@ -32,7 +32,7 @@ namespace Lucene.Net.Contrib
 
 		public override string ToString()
 		{
-			if (Type == TokenType.Field)
+			if (Type.IsAny(TokenType.Field))
 				return $"{Position:D3}: {Value}";
 
 			return $"{Position:D3}: {Value}    {Type} of: {ParentField}";
@@ -63,10 +63,10 @@ namespace Lucene.Net.Contrib
 			if (!TouchesCaret(caret))
 				return false;
 
-			if (Type.Is(TokenType.Open | TokenType.Close | TokenType.Colon | TokenType.Quote | TokenType.RegexDelimiter))
+			if (Type.IsAny(TokenType.Open | TokenType.Close | TokenType.Colon | TokenType.Quote | TokenType.RegexDelimiter))
 				return false;
 
-			if (Type.Is(TokenType.FieldValue))
+			if (Type.IsAny(TokenType.FieldValue))
 			{
 				if (Position == caret && Value[0].IsCj())
 					return false;

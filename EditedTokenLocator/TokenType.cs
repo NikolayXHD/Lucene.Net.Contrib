@@ -51,14 +51,14 @@ namespace Lucene.Net.Contrib
 
 	public static class TokenTypeExtension
 	{
-		public static bool Is(this TokenType value, TokenType kind)
+		public static bool IsAny(this TokenType value, TokenType kind)
 		{
 			return (value & kind) == value;
 		}
 
 		public static bool IsLegalCloserOf(this TokenType closer, TokenType? opener)
 		{
-			return opener.HasValue && closer.Is(TokenType.Close) && _legalOpenersByCloser[closer].Contains(opener.Value);
+			return opener.HasValue && closer.IsAny(TokenType.Close) && _legalOpenersByCloser[closer].Contains(opener.Value);
 		}
 
 		private static readonly Dictionary<TokenType, List<TokenType>> _legalOpenersByCloser = new Dictionary<TokenType, List<TokenType>>
