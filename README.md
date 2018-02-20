@@ -14,6 +14,7 @@ Based on this an end-user application can correctly decide what strings should i
 
 Example usage from my hobby project [Mtgdb.Gui](https://www.slightlymagic.net/forum/viewtopic.php?f=62&t=19299)
 
+![Implementation example screenshot](https://github.com/NikolayXHD/Mtgdb/raw/master/out/help/l/search_intellisense.jpg)
 
 ```csharp
 using System;
