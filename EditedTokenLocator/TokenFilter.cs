@@ -40,8 +40,7 @@ namespace Lucene.Net.Contrib
 
 		public static TokenType? GetTokenType(string s)
 		{
-			TokenType result;
-			if (_tokensDictionary.TryGetValue(s, out result))
+			if (_tokensDictionary.TryGetValue(s, out var result))
 				return result;
 
 			return null;
