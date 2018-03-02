@@ -6,31 +6,9 @@ namespace Lucene.Net.Contrib
 {
 	public sealed class ContextualEnumerator<T> : IEnumerator<T>
 	{
-		public ContextualEnumerator(IEnumerable<T> collection)
-		{
-			if (collection == null)
-			{
-				throw new ArgumentNullException(nameof(collection));
-			}
-
-			_enumerator = collection.GetEnumerator();
-
-			HasNext = _enumerator.MoveNext();
-
-			if (HasNext)
-			{
-				_next = _enumerator.Current;
-			}
-		}
-
 		public ContextualEnumerator(IEnumerator<T> enumerator)
 		{
-			if (enumerator == null)
-			{
-				throw new ArgumentNullException(nameof(enumerator));
-			}
-
-			_enumerator = enumerator;
+			_enumerator = enumerator ?? throw new ArgumentNullException(nameof(enumerator));
 
 			HasNext = _enumerator.MoveNext();
 
