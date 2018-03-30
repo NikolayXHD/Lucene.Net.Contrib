@@ -178,7 +178,7 @@ namespace Lucene.Net.Contrib
 					updateCurrentField();
 					token.NextTokenField = _currentField;
 				}
-				else if (isCjk())
+				else if (isCj())
 				{
 					var token = addToken(TokenType.FieldValue);
 					token.NextTokenField = _currentField;
@@ -191,7 +191,7 @@ namespace Lucene.Net.Contrib
 			return Tokens.TryGetLast()?.Type.IsAny(TokenType.Modifier) == true;
 		}
 
-		private bool isCjk()
+		private bool isCj()
 		{
 			if (_context.Current.Value.Length == 0)
 				return false;
