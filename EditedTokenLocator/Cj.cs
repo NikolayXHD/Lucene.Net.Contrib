@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Lucene.Net.Contrib
 {
-	public static class Cj
+	internal static class Cj
 	{
 		/// <summary>
 		/// Символ является иероглифом.
