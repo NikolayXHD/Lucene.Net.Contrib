@@ -61,7 +61,7 @@ namespace Lucene.Net.Contrib
 				}
 			}
 
-			Substring = EscapeString;
+			Substring = _escapeString;
 			return true;
 		}
 
@@ -95,7 +95,7 @@ namespace Lucene.Net.Contrib
 
 		private readonly string _query;
 		private const char EscapeCharacter = '\\';
-		private static readonly string EscapeString = new string(EscapeCharacter, 1);
+		private static readonly string _escapeString = new string(EscapeCharacter, 1);
 
 		public static string Unescape(string value)
 		{
