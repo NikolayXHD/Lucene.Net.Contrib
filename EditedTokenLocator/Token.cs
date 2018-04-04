@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Lucene.Net.Contrib
 {
 	public class Token
@@ -16,6 +18,9 @@ namespace Lucene.Net.Contrib
 
 		public TokenType Type { get; }
 		public string Value { get; }
+
+		internal Token PhraseStart { get; set; }
+		internal bool PhraseHasSlop { get; set; }
 
 		public Token Next { get; private set; }
 		public Token Previous { get; private set; }
@@ -76,6 +81,21 @@ namespace Lucene.Net.Contrib
 			}
 
 			return true;
+		}
+
+		public bool IsPhraseStart => PhraseStart == this && !PhraseHasSlop;
+		
+		public bool IsPhrase => PhraseStart != null && !PhraseHasSlop;
+
+		public IEnumerable<Token> GetPhraseTokens()
+		{
+			var current = PhraseStart;
+
+			while (current != null && current.PhraseStart == PhraseStart)
+			{
+				yield return current;
+				current = current.Next;
+			}
 		}
 	}
 }

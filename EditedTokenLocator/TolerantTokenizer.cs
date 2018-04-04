@@ -132,7 +132,7 @@ namespace Lucene.Net.Contrib
 							_currentField = Tokens[Tokens.Count - 1].ParentField;
 							token.NextTokenField = _currentField;
 						}
-						else
+						else if (!beforeTerminator)
 						{
 							var previous = Tokens.TryGetLast();
 
@@ -141,6 +141,12 @@ namespace Lucene.Net.Contrib
 								_currentField = previous.ParentField;
 
 							var token = addToken(tokenType);
+							token.NextTokenField = _currentField;
+						}
+						else
+						{
+							var token = addToken(tokenType);
+							updateCurrentField();
 							token.NextTokenField = _currentField;
 						}
 					}
@@ -246,19 +252,26 @@ namespace Lucene.Net.Contrib
 			string field;
 			var previous = Tokens.TryGetLast();
 
+			bool startsPhrase;
+
 			switch (tokenType)
 			{
 				case TokenType.Field:
+					startsPhrase = false;
 					field = _substring;
 					break;
+				
 				case TokenType.FieldValue:
-					if (previous?.Type.IsAny(TokenType.Modifier) == true)
-						field = null;
-					else
-						field = _currentField;
+					
+					startsPhrase = previous?.Type.IsAny(TokenType.OpenQuote) == true;
+					field = previous?.Type.IsAny(TokenType.Modifier) == true 
+						? null
+						: _currentField;
+
 					break;
 
 				default:
+					startsPhrase = false;
 					field = _currentField;
 					break;
 			}
@@ -268,6 +281,31 @@ namespace Lucene.Net.Contrib
 			var result = new Token(_start, value, tokenType, field);
 			result.SetPrevious(previous);
 			previous?.SetNext(result);
+
+			if (startsPhrase)
+				result.PhraseStart = result;
+			else if (tokenType == TokenType.FieldValue)
+				result.PhraseStart = previous?.PhraseStart;
+			else
+				result.PhraseStart = null;
+
+			if (tokenType.IsAny(TokenType.SlopeModifier))
+			{
+				if (previous?.Type.IsAny(TokenType.CloseQuote) == true)
+				{
+					var current = previous.Previous;
+
+					while (current != null)
+					{
+						current.PhraseHasSlop = true;
+
+						if (current.IsPhraseStart)
+							break;
+
+						current = current.Previous;
+					}
+				}
+			}
 
 			Tokens.Add(result);
 

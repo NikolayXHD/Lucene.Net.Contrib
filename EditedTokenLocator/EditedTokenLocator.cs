@@ -34,14 +34,67 @@ namespace Lucene.Net.Contrib
 				if (leftToken.Type.IsAny(TokenType.Boolean) && leftToken.Value.Length > 1)
 					return leftToken;
 
-				return tokenOnEmptyInput(tokens, caret, leftToken.NextTokenField);
+				return tokenOnEmptyInput(tokens, caret);
 			}
 
-			return tokenOnEmptyInput(tokens, caret, leftToken?.NextTokenField);
+			return tokenOnEmptyInput(tokens, caret);
 		}
 
-		private static Token tokenOnEmptyInput(List<Token> tokens, int caret, string field = null)
+		public static Token GetTokenForArbitraryInsertion(string query, int caret)
 		{
+			var tokenizer = new TolerantTokenizer(query);
+			tokenizer.Parse();
+
+			var tokens = tokenizer.Tokens;
+
+			var overllapingToken = tokens.FirstOrDefault(_ => _.OverlapsCaret(caret));
+
+			if (overllapingToken != null)
+				return tokenOnEmptyInput(tokens, overllapingToken.Position + overllapingToken.Value.Length);
+
+			var leftToken = tokens.LastOrDefault(_ => _.IsLeftToCaret(caret));
+
+			if (leftToken == null)
+				return tokenOnEmptyInput(tokens, 0);
+
+			return tokenOnEmptyInput(tokens, leftToken.Position + leftToken.Value.Length);
+		}
+
+		public static Token GetTokenForTermInsertion(string query, int caret)
+		{
+			var tokenizer = new TolerantTokenizer(query);
+			tokenizer.Parse();
+
+			var tokens = tokenizer.Tokens;
+
+			var token = 
+				tokens.FirstOrDefault(_ => _.OverlapsCaret(caret)) ??
+				tokens.LastOrDefault(_ => _.IsLeftToCaret(caret));
+
+			if (token == null)
+				return tokenOnEmptyInput(tokens, 0);
+
+			var current = token;
+
+			while (true)
+			{
+				if (!current.IsPhrase && string.IsNullOrEmpty(current.NextTokenField))
+					return tokenOnEmptyInput(tokens, current.Position + current.Value.Length);
+
+				current = current.Next;
+
+				if (current == null)
+					return tokenOnEmptyInput(tokens, 0);
+			}
+		}
+
+		private static Token tokenOnEmptyInput(List<Token> tokens, int caret)
+		{
+			var leftToken = tokens.LastOrDefault(_ => _.Position + _.Value.Length <= caret);
+			var rightToken = tokens.FirstOrDefault(_ => _.Position >= caret);
+
+			var field = leftToken?.NextTokenField;
+
 			var lastQuote = tokens.LastOrDefault(_ => _.Position < caret && _.Type.IsAny(TokenType.Quote | TokenType.RegexDelimiter));
 
 			Token result;
@@ -51,8 +104,11 @@ namespace Lucene.Net.Contrib
 			else
 				result = new Token(caret, string.Empty, TokenType.Field, field);
 
-			result.SetPrevious(tokens.LastOrDefault(_ => _.Position + _.Value.Length <= result.Position));
-			result.SetNext(tokens.FirstOrDefault(_ => _.Position >= result.Position + result.Value.Length));
+			result.SetPrevious(leftToken);
+			result.SetNext(rightToken);
+
+			result.PhraseStart = result.Previous?.PhraseStart;
+			result.PhraseHasSlop = result.Previous?.PhraseHasSlop == true;
 
 			return result;
 		}

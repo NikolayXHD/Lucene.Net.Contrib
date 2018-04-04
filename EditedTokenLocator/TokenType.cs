@@ -6,6 +6,11 @@ namespace Lucene.Net.Contrib
 	[Flags]
 	public enum TokenType
 	{
+		None = 0,
+
+		AnyOpen = Open | OpenQuote | OpenRegex,
+		AnyClose = Close | CloseQuote | CloseRegex,
+
 		Open = OpenOpenRange | OpenClosedRange | OpenGroup,
 		OpenRange = OpenOpenRange | OpenClosedRange,
 		OpenOpenRange = 1 << 0,
