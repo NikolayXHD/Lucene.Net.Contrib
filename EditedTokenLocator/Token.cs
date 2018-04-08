@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 
 namespace Lucene.Net.Contrib
 {
@@ -87,13 +87,21 @@ namespace Lucene.Net.Contrib
 		
 		public bool IsPhrase => PhraseStart != null && !PhraseHasSlop;
 
-		public IEnumerable<Token> GetPhraseTokens()
+		public string GetPhraseText(string queryText)
 		{
-			var current = PhraseStart;
+			if (!IsPhraseStart)
+				return Value;
 
-			while (current != null && current.PhraseStart == PhraseStart)
+			int start = PhraseStart.Position;
+			
+			var current = PhraseStart;
+			while (true)
 			{
-				yield return current;
+				var end = current.Position + current.Value.Length;
+
+				if (current.Next == null || current.Next.PhraseStart != PhraseStart)
+					return queryText.Substring(start, end - start);
+				
 				current = current.Next;
 			}
 		}
