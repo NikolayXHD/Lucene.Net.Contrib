@@ -8,8 +8,8 @@ namespace Lucene.Net.Contrib
 			Position = position;
 		}
 
-		public int Position { get; private set; }
+		public int Position { get; }
 
-		public string Value { get; private set; }
+		public string Value { get; }
 	}
 }

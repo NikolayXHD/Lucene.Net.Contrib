@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace Lucene.Net.Contrib
 {
-	internal static class TokenFilter
+	public static class TokenCatalog
 	{
-		private static readonly Dictionary<string, TokenType> _tokensDictionary = new Dictionary<string, TokenType>
+		public static readonly Dictionary<string, TokenType> TypeByValue = new Dictionary<string, TokenType>
 		{
 			{ "AND", TokenType.And },
 			{ "&&", TokenType.And },
@@ -40,7 +40,7 @@ namespace Lucene.Net.Contrib
 
 		public static TokenType? GetTokenType(string s)
 		{
-			if (_tokensDictionary.TryGetValue(s, out var result))
+			if (TypeByValue.TryGetValue(s, out var result))
 				return result;
 
 			return null;

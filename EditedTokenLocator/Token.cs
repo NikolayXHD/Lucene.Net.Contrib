@@ -1,5 +1,3 @@
-using System;
-
 namespace Lucene.Net.Contrib
 {
 	public class Token
@@ -19,7 +17,38 @@ namespace Lucene.Net.Contrib
 		public TokenType Type { get; }
 		public string Value { get; }
 
-		internal Token PhraseStart { get; set; }
+		public Token PhraseStart { get; set; }
+
+		public Token PhraseEnd
+		{
+			get
+			{
+				if (!IsPhrase)
+					return null;
+
+				var current = this;
+
+				while (true)
+				{
+					if (current?.Next.PhraseStart != PhraseStart)
+						return current;
+
+					current = current.Next;
+				}
+			}
+		}
+
+		public Token PhraseOpen => PhraseStart?.Previous ?? PhraseStart ?? this;
+
+		public Token PhraseClose
+		{
+			get
+			{
+				var end = PhraseEnd;
+				return end?.Next ?? end ?? this;
+			}
+		}
+
 		internal bool PhraseHasSlop { get; set; }
 
 		public Token Next { get; private set; }
@@ -89,21 +118,10 @@ namespace Lucene.Net.Contrib
 
 		public string GetPhraseText(string queryText)
 		{
-			if (!IsPhraseStart)
-				return Value;
+			var start = PhraseStart ?? this;
+			var end = PhraseEnd ?? this;
 
-			int start = PhraseStart.Position;
-			
-			var current = PhraseStart;
-			while (true)
-			{
-				var end = current.Position + current.Value.Length;
-
-				if (current.Next == null || current.Next.PhraseStart != PhraseStart)
-					return queryText.Substring(start, end - start);
-				
-				current = current.Next;
-			}
+			return queryText.Substring(start.Position, end.Position + end.Value.Length - start.Position);
 		}
 	}
 }

@@ -22,7 +22,7 @@ namespace Lucene.Net.Contrib
 				_substring += _context.Current.Value;
 
 				bool beforeTerminator = nextIsTerminator();
-				var tokenTypeNullable = TokenFilter.GetTokenType(_substring);
+				var tokenTypeNullable = TokenCatalog.GetTokenType(_substring);
 
 				if (_isRegexOpen)
 				{
@@ -37,7 +37,7 @@ namespace Lucene.Net.Contrib
 						_isRegexOpen = false;
 					}
 					// regex body token lasts until regex delimiter or End Of String
-					else if (!_context.HasNext || TokenFilter.GetTokenType(_context.Next.Value) == TokenType.RegexDelimiter)
+					else if (!_context.HasNext || TokenCatalog.GetTokenType(_context.Next.Value) == TokenType.RegexDelimiter)
 					{
 						var token = addToken(TokenType.RegexBody);
 						token.NextTokenField = _currentField;
@@ -157,7 +157,7 @@ namespace Lucene.Net.Contrib
 						token.NextTokenField = _currentField;
 					}
 				}
-				else if (TokenFilter.IsWhitespace(_substring))
+				else if (TokenCatalog.IsWhitespace(_substring))
 				{
 					// ignore whitespace token
 					_start = _position;
@@ -223,13 +223,13 @@ namespace Lucene.Net.Contrib
 			if (!_context.HasNext)
 				return true;
 
-			if (TokenFilter.IsWhitespace(_context.Next.Value))
+			if (TokenCatalog.IsWhitespace(_context.Next.Value))
 				return true;
 
-			bool nextIsSpecial = StringEscaper.SpecialChars.ContainsString(_context.Next.Value);
-			bool currentIsSpecial = StringEscaper.SpecialChars.ContainsString(_context.Current.Value);
+			bool nextIsTerminator = isTerminator(_context.Next.Value);
+			bool currentIsTerminator = isTerminator(_context.Current.Value);
 
-			if (!nextIsSpecial && !currentIsSpecial)
+			if (!nextIsTerminator && !currentIsTerminator)
 				return false;
 
 			if (_context.Next.Value != _context.Current.Value)
@@ -242,9 +242,16 @@ namespace Lucene.Net.Contrib
 			return true;
 		}
 
+		private static bool isTerminator(string value)
+		{
+			return 
+				TokenCatalog.GetTokenType(value)?.IsAny(TokenType.Wildcard) != true && 
+				StringEscaper.SpecialChars.ContainsString(value);
+		}
+
 		private bool nextIsColon()
 		{
-			return _context.HasNext && TokenFilter.GetTokenType(_context.Next.Value)?.IsAny(TokenType.Colon) == true;
+			return _context.HasNext && TokenCatalog.GetTokenType(_context.Next.Value)?.IsAny(TokenType.Colon) == true;
 		}
 
 		private Token addToken(TokenType tokenType)
