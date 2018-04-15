@@ -28,7 +28,7 @@ namespace Lucene.Net.Contrib
 
 			if (leftToken?.TouchesCaret(caret) == true)
 			{
-				if (leftToken.Type.IsAny(TokenType.Field | TokenType.FieldValue | TokenType.Modifier))
+				if (leftToken.Type.IsAny(TokenType.Field | TokenType.FieldValue | TokenType.Modifier | TokenType.Wildcard))
 					return leftToken;
 
 				if (leftToken.Type.IsAny(TokenType.Boolean) && leftToken.Value.Length > 1)

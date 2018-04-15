@@ -22,6 +22,8 @@ namespace Lucene.Net.Contrib
 				_substring += _context.Current.Value;
 
 				bool beforeTerminator = nextIsTerminator();
+				bool nextMaybeWildcard = nextMayBeWildcard();
+
 				var tokenTypeNullable = TokenCatalog.GetTokenType(_substring);
 
 				if (_isRegexOpen)
@@ -132,20 +134,20 @@ namespace Lucene.Net.Contrib
 							_currentField = Tokens[Tokens.Count - 1].ParentField;
 							token.NextTokenField = _currentField;
 						}
-						else if (!beforeTerminator)
+						else
 						{
 							var previous = Tokens.TryGetLast();
 
-							// adjacent wildcard tokens are related to the same field
-							if (previous != null && previous.Position + previous.Value.Length == _start)
+							bool isAdjacentToPrevious =
+								previous != null && 
+								previous.Position + previous.Value.Length == _start;
+
+							// adjacent wildcard and value tokens are related to the same field
+							if (isAdjacentToPrevious && previous.Type.IsAny(TokenType.Wildcard | TokenType.FieldValue))
 								_currentField = previous.ParentField;
 
 							var token = addToken(tokenType);
-							token.NextTokenField = _currentField;
-						}
-						else
-						{
-							var token = addToken(tokenType);
+
 							updateCurrentField();
 							token.NextTokenField = _currentField;
 						}
@@ -179,6 +181,16 @@ namespace Lucene.Net.Contrib
 				}
 				else if (beforeTerminator)
 				{
+					var previous = Tokens.TryGetLast();
+
+					bool isAdjacentToPrevious =
+						previous != null && 
+						previous.Position + previous.Value.Length == _start;
+
+					// adjacent wildcard and value tokens are related to the same field
+					if (isAdjacentToPrevious && previous.Type.IsAny(TokenType.Wildcard | TokenType.FieldValue))
+						_currentField = previous.ParentField;
+
 					var token = addToken(TokenType.FieldValue);
 
 					updateCurrentField();
@@ -218,6 +230,14 @@ namespace Lucene.Net.Contrib
 			return _openOperators.TryPeek()?.ParentField;
 		}
 
+		private bool nextMayBeWildcard()
+		{
+			if (!_context.HasNext)
+				return true;
+
+			return TokenCatalog.GetTokenType(_context.Next.Value)?.IsAny(TokenType.Wildcard) == true;
+		}
+
 		private bool nextIsTerminator()
 		{
 			if (!_context.HasNext)
@@ -244,9 +264,7 @@ namespace Lucene.Net.Contrib
 
 		private static bool isTerminator(string value)
 		{
-			return 
-				TokenCatalog.GetTokenType(value)?.IsAny(TokenType.Wildcard) != true && 
-				StringEscaper.SpecialChars.ContainsString(value);
+			return StringEscaper.SpecialChars.ContainsString(value);
 		}
 
 		private bool nextIsColon()
@@ -267,11 +285,11 @@ namespace Lucene.Net.Contrib
 					startsPhrase = false;
 					field = _substring;
 					break;
-				
+
 				case TokenType.FieldValue:
-					
+
 					startsPhrase = previous?.Type.IsAny(TokenType.OpenQuote) == true;
-					field = previous?.Type.IsAny(TokenType.Modifier) == true 
+					field = previous?.Type.IsAny(TokenType.Modifier) == true
 						? null
 						: _currentField;
 
