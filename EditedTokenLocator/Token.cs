@@ -19,7 +19,7 @@ namespace Lucene.Net.Contrib
 
 		public Token PhraseStart { get; set; }
 
-		public Token PhraseEnd
+		private Token PhraseEnd
 		{
 			get
 			{
