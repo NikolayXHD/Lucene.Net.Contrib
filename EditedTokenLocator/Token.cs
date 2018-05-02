@@ -30,7 +30,7 @@ namespace Lucene.Net.Contrib
 
 				while (true)
 				{
-					if (current?.Next.PhraseStart != PhraseStart)
+					if (current.Next?.PhraseStart != PhraseStart)
 						return current;
 
 					current = current.Next;
