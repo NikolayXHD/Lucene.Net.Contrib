@@ -846,7 +846,7 @@ namespace Lucene.Net.QueryParsers.Classic
         }
 
         // extracted from the .jj grammar
-        internal virtual Query HandleBareTokenQuery(string qfield, Token term, Token fuzzySlop, bool prefix, bool wildcard, bool fuzzy, bool regexp)
+        protected internal virtual Query HandleBareTokenQuery(string qfield, Token term, Token fuzzySlop, bool prefix, bool wildcard, bool fuzzy, bool regexp)
         {
             Query q;
 
@@ -904,7 +904,7 @@ namespace Lucene.Net.QueryParsers.Classic
         }
 
         // extracted from the .jj grammar
-        public virtual Query HandleQuotedTerm(string qfield, Token term, Token fuzzySlop)
+        protected internal virtual Query HandleQuotedTerm(string qfield, Token term, Token fuzzySlop)
         {
             int s = PhraseSlop;  // default
             if (fuzzySlop != null)

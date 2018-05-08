@@ -109,6 +109,7 @@ namespace Lucene.Net.Contrib
 
 			result.PhraseStart = result.Previous?.PhraseStart;
 			result.PhraseHasSlop = result.Previous?.PhraseHasSlop == true;
+			result.IsPhraseComplex = result.Previous?.IsPhraseComplex == true;
 
 			return result;
 		}

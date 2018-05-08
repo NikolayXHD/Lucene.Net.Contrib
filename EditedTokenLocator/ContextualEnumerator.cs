@@ -13,15 +13,11 @@ namespace Lucene.Net.Contrib
 			HasNext = _enumerator.MoveNext();
 
 			if (HasNext)
-			{
 				_next = _enumerator.Current;
-			}
 		}
 
-		public void Reset()
-		{
+		public void Reset() =>
 			_enumerator.Reset();
-		}
 
 		object IEnumerator.Current => Current;
 
@@ -30,9 +26,7 @@ namespace Lucene.Net.Contrib
 			get
 			{
 				if (!_hasCurrent)
-				{
 					throw new InvalidOperationException("Enumeration is not started or already finished");
-				}
 
 				return _current;
 			}
@@ -43,9 +37,7 @@ namespace Lucene.Net.Contrib
 			get
 			{
 				if (!HasPrevious)
-				{
 					throw new InvalidOperationException("There is no previous element");
-				}
 
 				return _previous;
 			}
@@ -56,9 +48,7 @@ namespace Lucene.Net.Contrib
 			get
 			{
 				if (!HasNext)
-				{
 					throw new InvalidOperationException("There is no next element");
-				}
 
 				return _next;
 			}
@@ -71,9 +61,7 @@ namespace Lucene.Net.Contrib
 		public bool MoveNext()
 		{
 			if (!HasNext)
-			{
 				return false;
-			}
 
 			_previous = _current;
 			HasPrevious = _hasCurrent;
@@ -82,17 +70,13 @@ namespace Lucene.Net.Contrib
 			HasNext = _enumerator.MoveNext();
 
 			if (HasNext)
-			{
 				_next = _enumerator.Current;
-			}
 
 			return true;
 		}
 
-		public void Dispose()
-		{
+		public void Dispose() =>
 			_enumerator.Dispose();
-		}
 
 		private readonly IEnumerator<T> _enumerator;
 

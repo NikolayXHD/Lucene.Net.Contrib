@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lucene.Net.Contrib
 {
@@ -22,7 +23,6 @@ namespace Lucene.Net.Contrib
 				_substring += _context.Current.Value;
 
 				bool beforeTerminator = nextIsTerminator();
-				bool nextMaybeWildcard = nextMayBeWildcard();
 
 				var tokenTypeNullable = TokenCatalog.GetTokenType(_substring);
 
@@ -139,7 +139,7 @@ namespace Lucene.Net.Contrib
 							var previous = Tokens.TryGetLast();
 
 							bool isAdjacentToPrevious =
-								previous != null && 
+								previous != null &&
 								previous.Position + previous.Value.Length == _start;
 
 							// adjacent wildcard and value tokens are related to the same field
@@ -184,7 +184,7 @@ namespace Lucene.Net.Contrib
 					var previous = Tokens.TryGetLast();
 
 					bool isAdjacentToPrevious =
-						previous != null && 
+						previous != null &&
 						previous.Position + previous.Value.Length == _start;
 
 					// adjacent wildcard and value tokens are related to the same field
@@ -230,14 +230,6 @@ namespace Lucene.Net.Contrib
 			return _openOperators.TryPeek()?.ParentField;
 		}
 
-		private bool nextMayBeWildcard()
-		{
-			if (!_context.HasNext)
-				return true;
-
-			return TokenCatalog.GetTokenType(_context.Next.Value)?.IsAny(TokenType.Wildcard) == true;
-		}
-
 		private bool nextIsTerminator()
 		{
 			if (!_context.HasNext)
@@ -277,26 +269,21 @@ namespace Lucene.Net.Contrib
 			string field;
 			var previous = Tokens.TryGetLast();
 
-			bool startsPhrase;
+			bool startsPhrase = previous?.Type.IsAny(TokenType.OpenQuote) == true;
 
 			switch (tokenType)
 			{
 				case TokenType.Field:
-					startsPhrase = false;
 					field = _substring;
 					break;
 
 				case TokenType.FieldValue:
-
-					startsPhrase = previous?.Type.IsAny(TokenType.OpenQuote) == true;
 					field = previous?.Type.IsAny(TokenType.Modifier) == true
 						? null
 						: _currentField;
-
 					break;
 
 				default:
-					startsPhrase = false;
 					field = _currentField;
 					break;
 			}
@@ -307,30 +294,39 @@ namespace Lucene.Net.Contrib
 			result.SetPrevious(previous);
 			previous?.SetNext(result);
 
+			bool isPhraseComplex = !tokenType.IsAny(TokenType.FieldValue);
+
 			if (startsPhrase)
-				result.PhraseStart = result;
-			else if (tokenType == TokenType.FieldValue)
-				result.PhraseStart = previous?.PhraseStart;
-			else
-				result.PhraseStart = null;
-
-			if (tokenType.IsAny(TokenType.SlopeModifier))
 			{
-				if (previous?.Type.IsAny(TokenType.CloseQuote) == true)
-				{
-					var current = previous.Previous;
-
-					while (current != null)
-					{
-						current.PhraseHasSlop = true;
-
-						if (current.IsPhraseStart)
-							break;
-
-						current = current.Previous;
-					}
-				}
+				result.PhraseStart = result;
+				result.IsPhraseComplex = isPhraseComplex;
 			}
+			else if (tokenType.IsAny(TokenType.CloseQuote))
+			{
+				result.PhraseStart = null;
+				result.IsPhraseComplex = false;
+			}
+			else
+			{
+				result.PhraseStart = previous?.PhraseStart;
+				
+				if (previous != null && !previous.IsPhraseComplex && isPhraseComplex)
+					foreach (var phraseToken in getPreviousPhraseTokens(result))
+						phraseToken.IsPhraseComplex = true;
+
+				result.IsPhraseComplex = isPhraseComplex;
+			}
+
+			if (result.PhraseStart != null)
+			{
+				if (isPhraseComplex)
+					foreach (var phraseToken in getPreviousPhraseTokens(previous))
+						phraseToken.IsPhraseComplex = true;
+			}
+
+			if (tokenType.IsAny(TokenType.SlopeModifier) && previous?.Type.IsAny(TokenType.CloseQuote) == true)
+				foreach (var phraseToken in getPreviousPhraseTokens(previous.Previous))
+					phraseToken.PhraseHasSlop = true;
 
 			Tokens.Add(result);
 
@@ -340,7 +336,20 @@ namespace Lucene.Net.Contrib
 			return result;
 		}
 
+		private static IEnumerable<Token> getPreviousPhraseTokens(Token token)
+		{
+			var current = token;
 
+			while (current != null)
+			{
+				yield return current;
+
+				if (current.IsPhraseStart)
+					yield break;
+
+				current = current.Previous;
+			}
+		}
 
 		private readonly Stack<Token> _openOperators = new Stack<Token>();
 		private bool _isRegexOpen;

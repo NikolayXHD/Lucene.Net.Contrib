@@ -6,7 +6,9 @@ using Lucene.Net.Search.Spans;
 using Lucene.Net.Util;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using Token = Lucene.Net.QueryParsers.Classic.Token;
 
 namespace Lucene.Net.QueryParsers.ComplexPhrase
 {
@@ -53,29 +55,52 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
 
         private bool isPass2ResolvingPhrases;
 
-        /// <summary>
-        /// When <see cref="InOrder"/> is true, the search terms must
-        /// exists in the documents as the same order as in query.
-        /// Choose between ordered (true) or un-ordered (false) proximity search.
-        /// </summary>
-        public virtual bool InOrder { get; internal set; }
-
         private ComplexPhraseQuery currentPhraseQuery = null;
 
         public ComplexPhraseQueryParser(LuceneVersion matchVersion, string f, Analyzer a)
             : base(matchVersion, f, a)
         {
-            // set property defaults
-            this.InOrder = true;
         }
 
-        protected internal override Query GetFieldQuery(string field, string queryText, int slop)
+
+        protected internal override Query HandleBareTokenQuery(string qfield, Token term, Token fuzzySlop, bool prefix, bool wildcard, bool fuzzy, bool regexp)
         {
-            ComplexPhraseQuery cpq = new ComplexPhraseQuery(field, queryText, slop, InOrder);
+            if (isPass2ResolvingPhrases || wildcard || prefix || fuzzy || regexp)
+                return base.HandleBareTokenQuery(qfield, term, fuzzySlop, prefix, wildcard, fuzzy, regexp);
+
+            return CreateComplexPhraseQuery(qfield, term, fuzzySlop, term.Image);
+        }
+
+        protected internal override Query HandleQuotedTerm(string qfield, Token term, Token fuzzySlop)
+        {
+            if (isPass2ResolvingPhrases)
+                return base.HandleQuotedTerm(qfield, term, fuzzySlop);
+
+            return CreateComplexPhraseQuery(qfield, term, fuzzySlop, term.Image.Substring(1, term.Image.Length - 2));
+        }
+
+        private Query CreateComplexPhraseQuery(string qfield, Token term, Token fuzzySlop, string phrase)
+        {
+            float slop = ParseSlop(fuzzySlop);
+
+            ComplexPhraseQuery cpq = new ComplexPhraseQuery(qfield, phrase, (int) Math.Abs(slop), inOrder: slop >= 0);
             complexPhrases.Add(cpq); // add to list of phrases to be parsed once
             // we
             // are through with this pass
             return cpq;
+        }
+
+        private static float ParseSlop(Token fuzzySlop)
+        {
+            if (fuzzySlop == null)
+                return 0f;
+
+            if (fuzzySlop.Image.Length <= 1)
+                return 0f;
+
+            float.TryParse(fuzzySlop.Image.Substring(1), NumberStyles.Float, CultureInfo.InvariantCulture, out var slop);
+
+            return slop;
         }
 
         public override Query Parse(string query)
@@ -126,6 +151,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
             {
                 isPass2ResolvingPhrases = false;
             }
+
             return q;
         }
 
@@ -146,6 +172,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                     throw new Exception("Error parsing complex phrase", pe);
                 }
             }
+
             return base.NewTermQuery(term);
         }
 
@@ -166,6 +193,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
             {
                 CheckPhraseClauseIsForSameField(field);
             }
+
             return base.GetWildcardQuery(field, termStr);
         }
 
@@ -175,6 +203,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
             {
                 CheckPhraseClauseIsForSameField(field);
             }
+
             return base.GetRangeQuery(field, part1, part2, startInclusive, endInclusive);
         }
 
@@ -188,6 +217,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 rangeQuery.MultiTermRewriteMethod = MultiTermQuery.SCORING_BOOLEAN_QUERY_REWRITE;
                 return rangeQuery;
             }
+
             return base.NewRangeQuery(field, part1, part2, startInclusive, endInclusive);
         }
 
@@ -197,6 +227,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
             {
                 CheckPhraseClauseIsForSameField(field);
             }
+
             return base.GetFuzzyQuery(field, termStr, minSimilarity);
         }
 
@@ -212,8 +243,11 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
             private readonly bool inOrder;
             private Query contents;
 
-            public ComplexPhraseQuery(string field, string phrasedQueryStringContents,
-                int slopFactor, bool inOrder)
+            public ComplexPhraseQuery(
+                string field,
+                string phrasedQueryStringContents,
+                int slopFactor,
+                bool inOrder)
             {
                 this.field = field;
                 this.phrasedQueryStringContents = phrasedQueryStringContents;
@@ -252,15 +286,21 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
 
             public override Query Rewrite(IndexReader reader)
             {
-                // ArrayList spanClauses = new ArrayList();
                 if (contents is TermQuery)
                 {
                     return contents;
                 }
+
                 // Build a sequence of Span clauses arranged in a SpanNear - child
                 // clauses can be complex
                 // Booleans e.g. nots and ors etc
                 int numNegatives = 0;
+
+                if (contents is PhraseQuery)
+                {
+                    return ToSpanNearQuery((PhraseQuery) contents);
+                }
+
                 if (!(contents is BooleanQuery))
                 {
                     throw new ArgumentException("Unknown query type \""
@@ -268,16 +308,18 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                         + "\" found in phrase query string \"" + phrasedQueryStringContents
                         + "\"");
                 }
-                BooleanQuery bq = (BooleanQuery)contents;
+
+                BooleanQuery bq = (BooleanQuery) contents;
+
                 BooleanClause[] bclauses = bq.GetClauses();
-                SpanQuery[] allSpanClauses = new SpanQuery[bclauses.Length];
+                var allSpanClauses = new List<SpanQuery>();
                 // For all clauses e.g. one* two~
                 for (int i = 0; i < bclauses.Length; i++)
                 {
                     // HashSet bclauseterms=new HashSet();
                     Query qc = bclauses[i].Query;
                     // Rewrite this clause e.g one* becomes (one OR onerous)
-                    qc = qc.Rewrite(reader);
+                    // qc = qc.Rewrite(reader);
                     if (bclauses[i].Occur.Equals(Occur.MUST_NOT))
                     {
                         numNegatives++;
@@ -286,58 +328,60 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                     if (qc is BooleanQuery)
                     {
                         List<SpanQuery> sc = new List<SpanQuery>();
-                        AddComplexPhraseClause(sc, (BooleanQuery)qc);
+                        AddComplexPhraseClause(sc, (BooleanQuery) qc);
                         if (sc.Count > 0)
                         {
-                            allSpanClauses[i] = sc.ElementAt(0);
+                            allSpanClauses.Add(sc[0]);
                         }
                         else
                         {
                             // Insert fake term e.g. phrase query was for "Fred Smithe*" and
                             // there were no "Smithe*" terms - need to
                             // prevent match on just "Fred".
-                            allSpanClauses[i] = new SpanTermQuery(new Term(field,
-                                "Dummy clause because no terms found - must match nothing"));
+                            allSpanClauses.Add(new SpanTermQuery(new Term(field,
+                                "Dummy clause because no terms found - must match nothing")));
                         }
+                    }
+                    else if (qc is PhraseQuery)
+                    {
+                        allSpanClauses.Add(ToSpanNearQuery((PhraseQuery) qc));
+                    }
+                    else if (qc is TermQuery)
+                    {
+                        TermQuery tq = (TermQuery) qc;
+                        allSpanClauses.Add(new SpanTermQuery(tq.Term));
+                    }
+                    else if (qc is MultiTermQuery)
+                    {
+                        var wrapper = new SpanMultiTermQueryWrapper<MultiTermQuery>((MultiTermQuery) qc);
+                        allSpanClauses.Add(wrapper);
                     }
                     else
                     {
-                        if (qc is TermQuery)
-                        {
-                            TermQuery tq = (TermQuery)qc;
-                            allSpanClauses[i] = new SpanTermQuery(tq.Term);
-                        }
-                        else
-                        {
-                            throw new ArgumentException("Unknown query type \""
-                                + qc.GetType().Name
-                                + "\" found in phrase query string \""
-                                + phrasedQueryStringContents + "\"");
-                        }
-
+                        throw new ArgumentException("Unknown query type \""
+                            + qc.GetType().Name
+                            + "\" found in phrase query string \""
+                            + phrasedQueryStringContents + "\"");
                     }
                 }
+
                 if (numNegatives == 0)
                 {
                     // The simple case - no negative elements in phrase
-                    return new SpanNearQuery(allSpanClauses, slopFactor, inOrder);
+                    return new SpanNearQuery(allSpanClauses.ToArray(), slopFactor, inOrder);
                 }
+
                 // Complex case - we have mixed positives and negatives in the
                 // sequence.
                 // Need to return a SpanNotQuery
                 List<SpanQuery> positiveClauses = new List<SpanQuery>();
-                for (int j = 0; j < allSpanClauses.Length; j++)
-                {
+                for (int j = 0; j < allSpanClauses.Count; j++)
                     if (!bclauses[j].Occur.Equals(Occur.MUST_NOT))
-                    {
                         positiveClauses.Add(allSpanClauses[j]);
-                    }
-                }
 
-                SpanQuery[] includeClauses = positiveClauses
-                    .ToArray();
+                SpanQuery[] includeClauses = positiveClauses.ToArray();
 
-                SpanQuery include = null;
+                SpanQuery include;
                 if (includeClauses.Length == 1)
                 {
                     include = includeClauses[0]; // only one positive clause
@@ -346,13 +390,13 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 {
                     // need to increase slop factor based on gaps introduced by
                     // negatives
-                    include = new SpanNearQuery(includeClauses, slopFactor + numNegatives,
-                        inOrder);
+                    include = new SpanNearQuery(includeClauses, slopFactor + numNegatives, inOrder);
                 }
+
                 // Use sequence of positive and negative values as the exclude.
-                SpanNearQuery exclude = new SpanNearQuery(allSpanClauses, slopFactor,
-                    inOrder);
-                SpanNotQuery snot = new SpanNotQuery(include, exclude);
+                var exclude = new SpanNearQuery(allSpanClauses.ToArray(), slopFactor, inOrder);
+                var snot = new SpanNotQuery(include, exclude);
+
                 return snot;
             }
 
@@ -376,15 +420,15 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
 
                     if (childQuery is TermQuery)
                     {
-                        TermQuery tq = (TermQuery)childQuery;
-                        SpanTermQuery stq = new SpanTermQuery(tq.Term);
-                        stq.Boost = tq.Boost;
-                        chosenList.Add(stq);
+                        chosenList.Add(ToSpanTermQuery((TermQuery) childQuery));
+                    }
+                    else if (childQuery is PhraseQuery)
+                    {
+                        chosenList.Add(ToSpanNearQuery((PhraseQuery) childQuery));
                     }
                     else if (childQuery is BooleanQuery)
                     {
-                        BooleanQuery cbq = (BooleanQuery)childQuery;
-                        AddComplexPhraseClause(chosenList, cbq);
+                        AddComplexPhraseClause(chosenList, (BooleanQuery) childQuery);
                     }
                     else
                     {
@@ -393,23 +437,42 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                             + childQuery.GetType().Name);
                     }
                 }
+
                 if (ors.Count == 0)
                 {
                     return;
                 }
-                SpanOrQuery soq = new SpanOrQuery(ors
-                    .ToArray());
+
+                SpanOrQuery soq = new SpanOrQuery(ors.ToArray());
                 if (nots.Count == 0)
                 {
                     spanClauses.Add(soq);
                 }
                 else
                 {
-                    SpanOrQuery snqs = new SpanOrQuery(nots
-                        .ToArray());
+                    SpanOrQuery snqs = new SpanOrQuery(nots.ToArray());
                     SpanNotQuery snq = new SpanNotQuery(soq, snqs);
                     spanClauses.Add(snq);
                 }
+            }
+
+            private static SpanTermQuery ToSpanTermQuery(TermQuery tq)
+            {
+                SpanTermQuery stq = new SpanTermQuery(tq.Term);
+                stq.Boost = tq.Boost;
+                return stq;
+            }
+
+            private static SpanNearQuery ToSpanNearQuery(PhraseQuery pq)
+            {
+                var spanTermQueries = pq.GetTerms()
+                    .Select(t => new SpanTermQuery(t))
+                    .Cast<SpanQuery>()
+                    .ToArray();
+
+                var snq = new SpanNearQuery(spanTermQueries, pq.Slop, pq.Slop >= 0);
+                snq.Boost = pq.Boost;
+                return snq;
             }
 
             public override string ToString(string field)
@@ -424,7 +487,8 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 result = prime * result + ((field == null) ? 0 : field.GetHashCode());
                 result = prime
                     * result
-                    + ((phrasedQueryStringContents == null) ? 0
+                    + ((phrasedQueryStringContents == null)
+                        ? 0
                         : phrasedQueryStringContents.GetHashCode());
                 result = prime * result + slopFactor;
                 result = prime * result + (inOrder ? 1 : 0);
@@ -443,7 +507,8 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 {
                     return false;
                 }
-                ComplexPhraseQuery other = (ComplexPhraseQuery)obj;
+
+                ComplexPhraseQuery other = (ComplexPhraseQuery) obj;
                 if (field == null)
                 {
                     if (other.field != null)
@@ -451,14 +516,16 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 }
                 else if (!field.Equals(other.field))
                     return false;
+
                 if (phrasedQueryStringContents == null)
                 {
                     if (other.phrasedQueryStringContents != null)
                         return false;
                 }
                 else if (!phrasedQueryStringContents
-                  .Equals(other.phrasedQueryStringContents))
+                    .Equals(other.phrasedQueryStringContents))
                     return false;
+
                 if (slopFactor != other.slopFactor)
                     return false;
                 return inOrder == other.inOrder;

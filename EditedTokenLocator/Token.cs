@@ -49,7 +49,8 @@ namespace Lucene.Net.Contrib
 			}
 		}
 
-		internal bool PhraseHasSlop { get; set; }
+		public bool PhraseHasSlop { get; set; }
+		public bool IsPhraseComplex { get; set; }
 
 		public Token Next { get; private set; }
 		public Token Previous { get; private set; }
@@ -112,9 +113,9 @@ namespace Lucene.Net.Contrib
 			return true;
 		}
 
-		public bool IsPhraseStart => PhraseStart == this && !PhraseHasSlop;
-		
-		public bool IsPhrase => PhraseStart != null && !PhraseHasSlop;
+		public bool IsPhraseStart => PhraseStart == this;
+
+		public bool IsPhrase => PhraseStart != null;
 
 		public string GetPhraseText(string queryText)
 		{
