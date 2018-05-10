@@ -874,7 +874,7 @@ namespace Lucene.Net.QueryParsers.Classic
             return q;
         }
 
-        internal virtual Query HandleBareFuzzy(string qfield, Token fuzzySlop, string termImage)
+        protected virtual Query HandleBareFuzzy(string qfield, Token fuzzySlop, string termImage)
         {
             Query q;
             float fms = FuzzyMinSim;
