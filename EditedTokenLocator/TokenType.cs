@@ -51,7 +51,8 @@ namespace Lucene.Net.Contrib
 		Colon = 1 << 28,
 
 		FieldValue = 1 << 29,
-		ModifierValue = 1 << 30
+		ModifierValue = 1 << 30,
+		Custom = 1 << 31
 	}
 
 	public static class TokenTypeExtension

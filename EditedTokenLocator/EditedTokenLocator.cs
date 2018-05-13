@@ -5,9 +5,8 @@ namespace Lucene.Net.Contrib
 {
 	public static class EditedTokenLocator
 	{
-		public static Token GetEditedToken(string query, int caret)
+		public static Token GetEditedToken(this TolerantTokenizer tokenizer, int caret)
 		{
-			var tokenizer = new TolerantTokenizer(query);
 			tokenizer.Parse();
 
 			var tokens = tokenizer.Tokens;
@@ -40,9 +39,8 @@ namespace Lucene.Net.Contrib
 			return tokenOnEmptyInput(tokens, caret);
 		}
 
-		public static Token GetTokenForArbitraryInsertion(string query, int caret)
+		public static Token GetTokenForArbitraryInsertion(this TolerantTokenizer tokenizer, int caret)
 		{
-			var tokenizer = new TolerantTokenizer(query);
 			tokenizer.Parse();
 
 			var tokens = tokenizer.Tokens;
@@ -60,9 +58,8 @@ namespace Lucene.Net.Contrib
 			return tokenOnEmptyInput(tokens, leftToken.Position + leftToken.Value.Length);
 		}
 
-		public static Token GetTokenForTermInsertion(string query, int caret)
+		public static Token GetTokenForTermInsertion(this TolerantTokenizer tokenizer, int caret)
 		{
-			var tokenizer = new TolerantTokenizer(query);
 			tokenizer.Parse();
 
 			var tokens = tokenizer.Tokens;

@@ -52,13 +52,10 @@ namespace Lucene.Net.Contrib
 			Position++;
 			if (Position < _query.Length)
 			{
-				if (SpecialChars.Contains(_query[Position]))
-				{
-					var result = _query.Substring(Position - 1, 2);
-					Position ++;
-					Substring = result;
-					return true;
-				}
+				var result = _query.Substring(Position - 1, 2);
+				Position++;
+				Substring = result;
+				return true;
 			}
 
 			Substring = _escapeString;

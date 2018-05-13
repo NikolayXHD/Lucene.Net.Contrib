@@ -77,11 +77,14 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
             float slop = ParseSlop(fuzzySlop);
             bool inOrder = fuzzySlop != null && fuzzySlop.Image.IndexOf(".", StringComparison.InvariantCulture) < 0;
 
-            var result = new ComplexPhraseQuery(qfield, phrase, (int) slop, inOrder);
+            var result = NewComplexPhraseQuery(qfield, phrase, (int) slop, inOrder);
             complexPhrases.Add(result);
 
             return result;
         }
+
+        protected virtual ComplexPhraseQuery NewComplexPhraseQuery(string qfield, string phrase, int slop, bool inOrder) => 
+            new ComplexPhraseQuery(qfield, phrase, slop, inOrder);
 
         private static float ParseSlop(Token fuzzySlop)
         {
@@ -311,7 +314,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 if (numNegatives == 0)
                 {
                     // The simple case - no negative elements in phrase
-                    return new SpanNearQuery(allSpanClauses.ToArray(), slopFactor, inOrder);
+                    return NewSpanNearQuery(allSpanClauses.ToArray(), slopFactor, inOrder);
                 }
 
                 // Complex case - we have mixed positives and negatives in the
@@ -337,18 +340,18 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 {
                     // need to increase slop factor based on gaps introduced by
                     // negatives
-                    include = new SpanNearQuery(includeClauses, slopFactor + numNegatives,
+                    include = NewSpanNearQuery(includeClauses, slopFactor + numNegatives,
                         inOrder);
                 }
 
                 // Use sequence of positive and negative values as the exclude.
-                var exclude = new SpanNearQuery(allSpanClauses.ToArray(), slopFactor, inOrder);
+                var exclude = NewSpanNearQuery(allSpanClauses.ToArray(), slopFactor, inOrder);
                 var snot = new SpanNotQuery(include, exclude);
 
                 return snot;
             }
 
-            private static SpanQuery Wrap(Query qc)
+            private SpanQuery Wrap(Query qc)
             {
                 if (qc is MultiTermQuery)
                 {
@@ -368,7 +371,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 throw new ArgumentException("Unknown query type:" + qc.GetType().Name);
             }
 
-            private static void AddComplexPhraseClause(IList<SpanQuery> spanClauses, BooleanQuery boolQuery)
+            private void AddComplexPhraseClause(IList<SpanQuery> spanClauses, BooleanQuery boolQuery)
             {
                 List<SpanQuery> ors = new List<SpanQuery>();
                 List<SpanQuery> nots = new List<SpanQuery>();
@@ -401,7 +404,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                     return;
                 }
 
-                SpanOrQuery soq = new SpanOrQuery(ors.ToArray());
+                SpanOrQuery soq = NewSpanOrQuery(ors);
                 if (nots.Count == 0)
                 {
                     spanClauses.Add(soq);
@@ -414,6 +417,11 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 }
             }
 
+            private static SpanOrQuery NewSpanOrQuery(List<SpanQuery> ors)
+            {
+                return new SpanOrQuery(ors.ToArray());
+            }
+
             private static SpanTermQuery ToSpanTermQuery(TermQuery tq)
             {
                 SpanTermQuery stq = new SpanTermQuery(tq.Term);
@@ -421,16 +429,23 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 return stq;
             }
 
-            private static SpanNearQuery ToSpanNearQuery(PhraseQuery pq)
+            private SpanNearQuery ToSpanNearQuery(PhraseQuery pq)
             {
                 var spanTermQueries = pq.GetTerms()
                     .Select(t => new SpanTermQuery(t))
                     .Cast<SpanQuery>()
                     .ToArray();
 
-                var snq = new SpanNearQuery(spanTermQueries, pq.Slop, pq.Slop >= 0);
+                int slop = pq.Slop;
+
+                var snq = NewSpanNearQuery(spanTermQueries, slop, inOrder: true);
                 snq.Boost = pq.Boost;
                 return snq;
+            }
+
+            protected virtual SpanNearQuery NewSpanNearQuery(SpanQuery[] spanTermQueries, int slop, bool inOrder)
+            {
+                return new SpanNearQuery(spanTermQueries, slop, inOrder);
             }
 
             public override string ToString(string field)

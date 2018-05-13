@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Lucene.Net.Contrib
 {
@@ -8,9 +7,10 @@ namespace Lucene.Net.Contrib
 		public List<Token> Tokens { get; } = new List<Token>();
 		public List<string> SyntaxErrors { get; } = new List<string>();
 
-		public TolerantTokenizer(string queryStr)
+		public TolerantTokenizer(string queryStr, params char[] customTokens)
 		{
 			_context = new ContextualEnumerator<EscapedChar>(new StringEscaper(queryStr));
+			_customTokens = new HashSet<char>(customTokens);
 		}
 
 		public void Parse()
@@ -24,7 +24,10 @@ namespace Lucene.Net.Contrib
 
 				bool beforeTerminator = nextIsTerminator();
 
-				var tokenTypeNullable = TokenCatalog.GetTokenType(_substring);
+
+				TokenType? tokenTypeNullable =
+					getCustomTokenType(_substring) ??
+					TokenCatalog.GetTokenType(_substring);
 
 				if (_isRegexOpen)
 				{
@@ -39,7 +42,8 @@ namespace Lucene.Net.Contrib
 						_isRegexOpen = false;
 					}
 					// regex body token lasts until regex delimiter or End Of String
-					else if (!_context.HasNext || TokenCatalog.GetTokenType(_context.Next.Value) == TokenType.RegexDelimiter)
+					else if (!_context.HasNext ||
+						TokenCatalog.GetTokenType(_context.Next.Value) == TokenType.RegexDelimiter)
 					{
 						var token = addToken(TokenType.RegexBody);
 						token.NextTokenField = _currentField;
@@ -71,7 +75,8 @@ namespace Lucene.Net.Contrib
 							if (_openOperators.Count == 0)
 								SyntaxErrors.Add($"Unmatched {_substring} at {_start}");
 							else
-								SyntaxErrors.Add($"Unexpected {_substring} at {_start} closing {_openOperators.Peek().Value} at {_openOperators.Peek().Position}");
+								SyntaxErrors.Add(
+									$"Unexpected {_substring} at {_start} closing {_openOperators.Peek().Value} at {_openOperators.Peek().Position}");
 
 							var token = addToken(tokenType);
 							token.NextTokenField = _currentField;
@@ -118,7 +123,8 @@ namespace Lucene.Net.Contrib
 							token.NextTokenField = _currentField;
 						}
 					}
-					else if (tokenType.IsAny(TokenType.Modifier | TokenType.Colon) || tokenType.IsAny(TokenType.Boolean) &&
+					else if (tokenType.IsAny(TokenType.Modifier | TokenType.Colon) ||
+						tokenType.IsAny(TokenType.Boolean) &&
 						// To avoid recognizing AND in ANDY
 						(StringEscaper.SpecialChars.Contains(_substring[0]) || beforeTerminator))
 					{
@@ -152,7 +158,13 @@ namespace Lucene.Net.Contrib
 							token.NextTokenField = _currentField;
 						}
 					}
-					else if (_openOperators.TryPeek()?.Type.IsAny(TokenType.OpenRange) == true && tokenType.IsAny(TokenType.To))
+					else if (tokenType.IsAny(TokenType.Custom))
+					{
+						var token = addToken(tokenType);
+						token.NextTokenField = _currentField;
+					}
+					else if (_openOperators.TryPeek()?.Type.IsAny(TokenType.OpenRange) == true &&
+						tokenType.IsAny(TokenType.To))
 					{
 						// interval extremes separator
 						var token = addToken(tokenType);
@@ -202,6 +214,14 @@ namespace Lucene.Net.Contrib
 					token.NextTokenField = _currentField;
 				}
 			}
+		}
+
+		private TokenType? getCustomTokenType(string substring)
+		{
+			if (substring.Length == 1 && _customTokens.Contains(substring[0]))
+				return TokenType.Custom;
+
+			return null;
 		}
 
 		private bool prevIsModifier()
@@ -254,14 +274,17 @@ namespace Lucene.Net.Contrib
 			return true;
 		}
 
-		private static bool isTerminator(string value)
+		private bool isTerminator(string value)
 		{
-			return StringEscaper.SpecialChars.ContainsString(value);
+			return
+				StringEscaper.SpecialChars.ContainsString(value) ||
+				value.Length == 1 && _customTokens.Contains(value[0]);
 		}
 
 		private bool nextIsColon()
 		{
-			return _context.HasNext && TokenCatalog.GetTokenType(_context.Next.Value)?.IsAny(TokenType.Colon) == true;
+			return _context.HasNext &&
+				TokenCatalog.GetTokenType(_context.Next.Value)?.IsAny(TokenType.Colon) == true;
 		}
 
 		private Token addToken(TokenType tokenType)
@@ -306,22 +329,15 @@ namespace Lucene.Net.Contrib
 				result.PhraseStart = null;
 				result.IsPhraseComplex = false;
 			}
-			else
+			else if ((result.PhraseStart = previous?.PhraseStart) != null)
 			{
-				result.PhraseStart = previous?.PhraseStart;
-				
-				if (previous != null && !previous.IsPhraseComplex && isPhraseComplex)
+				if (previous.IsPhraseComplex)
+					isPhraseComplex = true;
+				else if (isPhraseComplex)
 					foreach (var phraseToken in getPreviousPhraseTokens(result))
 						phraseToken.IsPhraseComplex = true;
 
 				result.IsPhraseComplex = isPhraseComplex;
-			}
-
-			if (result.PhraseStart != null)
-			{
-				if (isPhraseComplex)
-					foreach (var phraseToken in getPreviousPhraseTokens(previous))
-						phraseToken.IsPhraseComplex = true;
 			}
 
 			if (tokenType.IsAny(TokenType.SlopeModifier) && previous?.Type.IsAny(TokenType.CloseQuote) == true)
@@ -358,5 +374,6 @@ namespace Lucene.Net.Contrib
 		private int _position;
 		private string _substring;
 		private readonly ContextualEnumerator<EscapedChar> _context;
+		private readonly HashSet<char> _customTokens;
 	}
 }
