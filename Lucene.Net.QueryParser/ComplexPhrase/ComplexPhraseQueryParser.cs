@@ -351,7 +351,7 @@ namespace Lucene.Net.QueryParsers.ComplexPhrase
                 return snot;
             }
 
-            private SpanQuery Wrap(Query qc)
+            protected virtual SpanQuery Wrap(Query qc)
             {
                 if (qc is MultiTermQuery)
                 {
