@@ -39,36 +39,13 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Lucene.Net">
-      <HintPath>..\bin\Lucene.Net.dll</HintPath>
-    </Reference>
-    <Reference Include="Lucene.Net.Analysis.Common">
-      <HintPath>..\bin\Lucene.Net.Analysis.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="Lucene.Net.Misc">
-      <HintPath>..\bin\Lucene.Net.Misc.dll</HintPath>
-    </Reference>
-    <Reference Include="Lucene.Net.Queries">
-      <HintPath>..\bin\Lucene.Net.Queries.dll</HintPath>
-    </Reference>
-    <Reference Include="Lucene.Net.QueryParser">
-      <HintPath>..\bin\Lucene.Net.QueryParser.dll</HintPath>
-    </Reference>
-    <Reference Include="Lucene.Net.Sandbox">
-      <HintPath>..\bin\Lucene.Net.Sandbox.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.ValueTuple.4.4.0\lib\portable-net40+sl4+win8+wp8\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cj.cs" />
     <Compile Include="EditedTokenLocator.cs" />
-    <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="BinarySearch.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ContextualEnumerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -78,9 +55,6 @@
     <Compile Include="Token.cs" />
     <Compile Include="TokenCatalog.cs" />
     <Compile Include="TokenType.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

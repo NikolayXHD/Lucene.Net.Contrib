@@ -10,12 +10,12 @@ namespace Lucene.Net.Contrib
 		/// </summary>
 		public static bool IsCj(this char c)
 		{
-			var rangeIndex = CjCharacterRanges.BinarySearchFirstIndexOf(r => r.Max >= c);
+			var rangeIndex = _cjCharacterRanges.BinarySearchFirstIndexOf(r => r.Max >= c);
 
 			if (rangeIndex < 0)
 				return false;
 
-			if (CjCharacterRanges[rangeIndex].Min <= c)
+			if (_cjCharacterRanges[rangeIndex].Min <= c)
 				return true;
 
 			return false;
@@ -28,7 +28,7 @@ namespace Lucene.Net.Contrib
 		/// 
 		/// Диапазоны упорядочены по-возрастанию для оптимизации поиска
 		/// </summary>
-		private static readonly List<CharRange> CjCharacterRanges = new List<CharRange>
+		private static readonly List<CharRange> _cjCharacterRanges = new List<CharRange>
 		{
 			new CharRange('\u3040', '\u312f'),
 			//new CharRange('\u3040', '\u309F'), // Hiragana

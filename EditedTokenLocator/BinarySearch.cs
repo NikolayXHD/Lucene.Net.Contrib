@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Lucene.Net.Contrib
 {
-	internal static class EnumerableExtensions
+	internal static class BinarySearch
 	{
 		/// <summary>
 		/// Выполняет бинарный поиск первого элемента массива, удовлетворяющего некоторому критерию.
@@ -16,20 +16,6 @@ namespace Lucene.Net.Contrib
 				return -1;
 
 			return binarySearchFirstIndex(list, predicate, 0, list.Count);
-		}
-
-		/// <summary>
-		/// Выполняет бинарный поиск последнего элемента массива, удовлетворяющего некоторому критерию.
-		/// Предполагается, что если условие выполняется для некоторого элемента, то оно выполняется для всех предыдущих элементов массива.
-		/// </summary>
-		/// <returns>Индекс найденного элемента или -1, если ни один элемент массива не удовлетворяет критерию.</returns>
-		public static int BinarySearchLastIndexOf<T>(this IList<T> list, Func<T, bool> predicate)
-		{
-			var predicateStopsBeingTrueAt = BinarySearchFirstIndexOf(list, _ => !predicate(_));
-			if (predicateStopsBeingTrueAt == -1)
-				return list.Count - 1;
-
-			return predicateStopsBeingTrueAt - 1;
 		}
 
 		private static int binarySearchFirstIndex<T>(this IList<T> list, Func<T, bool> predicate, int left, int count)
