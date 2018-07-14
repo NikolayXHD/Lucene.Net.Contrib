@@ -38,7 +38,8 @@ namespace Lucene.Net.Contrib
 			}
 		}
 
-		public Token PhraseOpen => PhraseStart?.Previous ?? PhraseStart ?? this;
+		public Token PhraseOpen =>
+			PhraseStart?.Previous ?? PhraseStart ?? this;
 
 		public Token PhraseClose
 		{
@@ -52,18 +53,8 @@ namespace Lucene.Net.Contrib
 		public bool PhraseHasSlop { get; set; }
 		public bool IsPhraseComplex { get; set; }
 
-		public Token Next { get; private set; }
-		public Token Previous { get; private set; }
-
-		internal void SetNext(Token value)
-		{
-			Next = value;
-		}
-
-		internal void SetPrevious(Token value)
-		{
-			Previous = value;
-		}
+		public Token Next { get; internal set; }
+		public Token Previous { get; internal set; }
 
 		public override string ToString()
 		{

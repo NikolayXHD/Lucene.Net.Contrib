@@ -92,21 +92,49 @@ namespace Lucene.Net.Contrib
 
 			var field = leftToken?.NextTokenField;
 
-			var lastQuote = tokens.LastOrDefault(_ => _.Position < caret && _.Type.IsAny(TokenType.Quote | TokenType.RegexDelimiter));
+			var lastValueDelimiter = tokens.LastOrDefault(_ =>
+				_.Position < caret && _.Type.IsAny(TokenType.Quote | TokenType.RegexDelimiter));
 
-			Token result;
+			bool isFieldValue =
+				!string.IsNullOrEmpty(field) ||
+				lastValueDelimiter?.Type.IsAny(TokenType.OpenQuote | TokenType.OpenRegex) == true;
 
-			if (lastQuote?.Type.IsAny(TokenType.OpenQuote | TokenType.OpenRegex) == true || !string.IsNullOrEmpty(field))
-				result = new Token(caret, string.Empty, TokenType.FieldValue, field);
+			if (!isFieldValue)
+				return new Token(caret, string.Empty, TokenType.Field, field)
+				{
+					Previous = leftToken,
+					Next = rightToken
+				};
+
+			var result = new Token(caret, string.Empty, TokenType.FieldValue, field)
+			{
+				Previous = leftToken,
+				Next = rightToken
+			};
+
+			if (leftToken == null)
+				return result;
+
+			bool afterOpenQuote = leftToken == lastValueDelimiter;
+			bool beforeCloseQuote = rightToken?.Type.IsAny(TokenType.CloseQuote) != false;
+
+			if (afterOpenQuote && beforeCloseQuote)
+			{
+				// empty phrase, maybe not closed
+				result.PhraseStart = result;
+				result.PhraseHasSlop = rightToken?.Next?.Type.IsAny(TokenType.SlopeModifier) == true;
+				result.IsPhraseComplex = false;
+			}
 			else
-				result = new Token(caret, string.Empty, TokenType.Field, field);
+			{
+				var phraseToken = afterOpenQuote
+					? rightToken
+					: leftToken;
 
-			result.SetPrevious(leftToken);
-			result.SetNext(rightToken);
-
-			result.PhraseStart = result.Previous?.PhraseStart;
-			result.PhraseHasSlop = result.Previous?.PhraseHasSlop == true;
-			result.IsPhraseComplex = result.Previous?.IsPhraseComplex == true;
+				result.PhraseStart = phraseToken.PhraseStart;
+				result.PhraseHasSlop = phraseToken.PhraseHasSlop;
+				result.IsPhraseComplex = phraseToken.IsPhraseComplex;
+			}
 
 			return result;
 		}

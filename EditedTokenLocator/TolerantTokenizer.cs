@@ -216,13 +216,10 @@ namespace Lucene.Net.Contrib
 			}
 		}
 
-		private TokenType? getCustomTokenType(string substring)
-		{
-			if (substring.Length == 1 && _customTokens.Contains(substring[0]))
-				return TokenType.Custom;
-
-			return null;
-		}
+		private TokenType? getCustomTokenType(string substring) =>
+			substring.Length == 1 && _customTokens.Contains(substring[0])
+				? (TokenType?) TokenType.Custom
+				: null;
 
 		private bool prevIsModifier()
 		{
@@ -314,15 +311,21 @@ namespace Lucene.Net.Contrib
 			string value = _substring.TrimEnd();
 
 			var result = new Token(_start, value, tokenType, field);
-			result.SetPrevious(previous);
-			previous?.SetNext(result);
+			if (previous != null)
+			{
+				result.Previous = previous;
+				previous.Next = result;
+			}
 
 			bool isPhraseComplex = !tokenType.IsAny(TokenType.FieldValue);
 
 			if (startsPhrase)
 			{
-				result.PhraseStart = result;
-				result.IsPhraseComplex = isPhraseComplex;
+				if (!result.Type.IsAny(TokenType.CloseQuote))
+				{
+					result.PhraseStart = result;
+					result.IsPhraseComplex = isPhraseComplex;
+				}
 			}
 			else if (tokenType.IsAny(TokenType.CloseQuote))
 			{
