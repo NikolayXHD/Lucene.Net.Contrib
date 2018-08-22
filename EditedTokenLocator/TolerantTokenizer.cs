@@ -25,7 +25,7 @@ namespace Lucene.Net.Contrib
 				bool beforeTerminator = nextIsTerminator();
 
 
-				TokenType? tokenTypeNullable =
+				var tokenTypeNullable =
 					getCustomTokenType(_substring) ??
 					TokenCatalog.GetTokenType(_substring);
 
@@ -231,10 +231,7 @@ namespace Lucene.Net.Contrib
 			if (_context.Current.Value.Length == 0)
 				return false;
 
-			if (_context.Current.Value[_context.Current.Value.Length - 1].IsCj())
-				return true;
-
-			return false;
+			return _context.Current.Value[_context.Current.Value.Length - 1].IsCj();
 		}
 
 		private void updateCurrentField()
@@ -265,10 +262,7 @@ namespace Lucene.Net.Contrib
 				// There are no operators constructed from different special chars
 				return true;
 
-			if (StringEscaper.TwoSymbolOperators.ContainsString(_context.Current.Value))
-				return false;
-
-			return true;
+			return !StringEscaper.TwoSymbolOperators.ContainsString(_context.Current.Value);
 		}
 
 		private bool isTerminator(string value)

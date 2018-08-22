@@ -56,13 +56,10 @@ namespace Lucene.Net.Contrib
 		public Token Next { get; internal set; }
 		public Token Previous { get; internal set; }
 
-		public override string ToString()
-		{
-			if (Type.IsAny(TokenType.Field))
-				return $"{Position:D3}: {Value}";
-
-			return $"{Position:D3}: {Value}    {Type} of: {ParentField}";
-		}
+		public override string ToString() =>
+			Type.IsAny(TokenType.Field)
+				? $"{Position:D3}: {Value}"
+				: $"{Position:D3}: {Value}    {Type} of: {ParentField}";
 
 		public bool IsLeftToCaret(int caret)
 		{

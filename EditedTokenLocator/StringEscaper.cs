@@ -35,7 +35,7 @@ namespace Lucene.Net.Contrib
 			int s = getSpacesCount();
 			if (s > 0)
 			{
-				var result = new string(_query[Position], s);
+				string result = new string(_query[Position], s);
 				Position += s;
 				Substring = result;
 				return true;
@@ -43,7 +43,7 @@ namespace Lucene.Net.Contrib
 
 			if (_query[Position] != EscapeCharacter)
 			{
-				var result = new string(_query[Position], 1);
+				string result = new string(_query[Position], 1);
 				Position++;
 				Substring = result;
 				return true;
@@ -52,7 +52,7 @@ namespace Lucene.Net.Contrib
 			Position++;
 			if (Position < _query.Length)
 			{
-				var result = _query.Substring(Position - 1, 2);
+				var result = _query.Substring(Position - 1, length: 2);
 				Position++;
 				Substring = result;
 				return true;
@@ -92,7 +92,7 @@ namespace Lucene.Net.Contrib
 
 		private readonly string _query;
 		private const char EscapeCharacter = '\\';
-		private static readonly string _escapeString = new string(EscapeCharacter, 1);
+		private static readonly string _escapeString = new string(EscapeCharacter, count: 1);
 
 		public static string Unescape(string value)
 		{
@@ -103,10 +103,9 @@ namespace Lucene.Net.Contrib
 			{
 				var current = escaper.Current;
 
-				if (current.Value.Length == 1)
-					resultBuilder.Append(current.Value);
-				else
-					resultBuilder.Append(current.Value.Substring(1));
+				resultBuilder.Append(current.Value.Length == 1 
+					? current.Value 
+					: current.Value.Substring(1));
 			}
 
 			return resultBuilder.ToString();
@@ -118,7 +117,7 @@ namespace Lucene.Net.Contrib
 
 			for (int i = 0; i < value.Length; i++)
 			{
-				var c = value[i];
+				char c = value[i];
 				if (SpecialChars.Contains(c))
 					resultBuilder.Append(EscapeCharacter);
 

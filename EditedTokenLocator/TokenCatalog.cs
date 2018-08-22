@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lucene.Net.Contrib
 {
@@ -49,17 +50,7 @@ namespace Lucene.Net.Contrib
 
 		public static bool IsWhitespace(string s)
 		{
-			if (s == string.Empty)
-				return true;
-
-			for (int i = 0; i < s.Length; i++)
-			{
-				var c = s[i];
-				if (!char.IsWhiteSpace(c))
-					return false;
-			}
-
-			return true;
+			return s == string.Empty || s.All(char.IsWhiteSpace);
 		}
 	}
 }

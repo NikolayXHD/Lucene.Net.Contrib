@@ -5,17 +5,12 @@ namespace Lucene.Net.Contrib
 {
 	internal static class BinarySearch
 	{
-		/// <summary>
-		/// Выполняет бинарный поиск первого элемента массива, удовлетворяющего некоторому критерию.
-		/// Предполагается, что если условие выполняется для некоторого элемента, то оно выполняется для всех последующих элементов массива.
-		/// </summary>
-		/// <returns>Индекс найденного элемента или -1, если ни один элемент массива не удовлетворяет критерию.</returns>
 		public static int BinarySearchFirstIndexOf<T>(this IList<T> list, Func<T, bool> predicate)
 		{
 			if (list.Count == 0)
 				return -1;
 
-			return binarySearchFirstIndex(list, predicate, 0, list.Count);
+			return binarySearchFirstIndex(list, predicate, left: 0, count: list.Count);
 		}
 
 		private static int binarySearchFirstIndex<T>(this IList<T> list, Func<T, bool> predicate, int left, int count)
@@ -26,9 +21,9 @@ namespace Lucene.Net.Contrib
 			if (count == 1)
 				return -1;
 
-			var middle = left + count / 2;
+			int middle = left + count / 2;
 
-			var searchRightHalfResult = binarySearchFirstIndex(list, predicate, middle, count - count / 2);
+			int searchRightHalfResult = binarySearchFirstIndex(list, predicate, middle, count - count / 2);
 
 			if (searchRightHalfResult > middle)
 				return searchRightHalfResult;
@@ -38,12 +33,12 @@ namespace Lucene.Net.Contrib
 
 			// searchRightHalfResult == middle
 
-			var newCount = middle - left - 1;
+			int newCount = middle - left - 1;
 			if (newCount == 0)
 				return middle;
 
-			var newLeft = left + 1;
-			var searchLeftResult = binarySearchFirstIndex(list, predicate, newLeft, newCount);
+			int newLeft = left + 1;
+			int searchLeftResult = binarySearchFirstIndex(list, predicate, newLeft, newCount);
 
 			if (searchLeftResult == -1)
 				return middle;

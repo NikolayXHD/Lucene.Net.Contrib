@@ -11,10 +11,10 @@ namespace Lucene.Net.Contrib
 
 			var tokens = tokenizer.Tokens;
 
-			var overllapingToken = tokens.FirstOrDefault(_ => _.OverlapsCaret(caret));
+			var overlappingToken = tokens.FirstOrDefault(_ => _.OverlapsCaret(caret));
 
-			if (overllapingToken != null)
-				return overllapingToken;
+			if (overlappingToken != null)
+				return overlappingToken;
 
 			var leftToken = tokens.LastOrDefault(_ => _.IsLeftToCaret(caret));
 			var rightToken = tokens.FirstOrDefault(_ => _.IsRightToCaret(caret));
@@ -45,15 +45,15 @@ namespace Lucene.Net.Contrib
 
 			var tokens = tokenizer.Tokens;
 
-			var overllapingToken = tokens.FirstOrDefault(_ => _.OverlapsCaret(caret));
+			var overlappingToken = tokens.FirstOrDefault(_ => _.OverlapsCaret(caret));
 
-			if (overllapingToken != null)
-				return tokenOnEmptyInput(tokens, overllapingToken.Position + overllapingToken.Value.Length);
+			if (overlappingToken != null)
+				return tokenOnEmptyInput(tokens, overlappingToken.Position + overlappingToken.Value.Length);
 
 			var leftToken = tokens.LastOrDefault(_ => _.IsLeftToCaret(caret));
 
 			if (leftToken == null)
-				return tokenOnEmptyInput(tokens, 0);
+				return tokenOnEmptyInput(tokens, caret: 0);
 
 			return tokenOnEmptyInput(tokens, leftToken.Position + leftToken.Value.Length);
 		}
@@ -69,7 +69,7 @@ namespace Lucene.Net.Contrib
 				tokens.LastOrDefault(_ => _.IsLeftToCaret(caret));
 
 			if (token == null)
-				return tokenOnEmptyInput(tokens, 0);
+				return tokenOnEmptyInput(tokens, caret: 0);
 
 			var current = token;
 
@@ -81,7 +81,7 @@ namespace Lucene.Net.Contrib
 				current = current.Next;
 
 				if (current == null)
-					return tokenOnEmptyInput(tokens, 0);
+					return tokenOnEmptyInput(tokens, caret: 0);
 			}
 		}
 
