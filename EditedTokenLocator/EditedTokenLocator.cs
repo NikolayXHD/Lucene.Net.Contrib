@@ -55,7 +55,7 @@ namespace Lucene.Net.Contrib
 			if (leftToken == null)
 				return tokenOnEmptyInput(tokens, caret: 0);
 
-			return tokenOnEmptyInput(tokens, leftToken.Position + leftToken.Value.Length);
+			return tokenOnEmptyInput(tokens, caret);
 		}
 
 		public static Token GetTokenForTermInsertion(this TolerantTokenizer tokenizer, int caret)
