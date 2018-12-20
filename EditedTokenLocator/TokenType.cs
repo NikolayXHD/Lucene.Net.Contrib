@@ -57,10 +57,8 @@ namespace Lucene.Net.Contrib
 
 	public static class TokenTypeExtension
 	{
-		public static bool IsAny(this TokenType value, TokenType kind)
-		{
-			return (value & kind) == value;
-		}
+		public static bool IsAny(this TokenType value, TokenType kind) =>
+			value != TokenType.None && (value & kind) == value;
 
 		public static bool IsLegalCloserOf(this TokenType closer, TokenType? opener)
 		{
