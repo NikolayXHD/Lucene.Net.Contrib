@@ -9,3 +9,4 @@ TestResults
 TestResult.xml
 packages/
 .vs
+.idea
