@@ -29,7 +29,7 @@ namespace Lucene.Net.Support.IO
     /// </summary>
     public static class FileSupport
     {
-        private static int ERROR_FILE_EXISTS = 0x0050;
+        // private static int ERROR_FILE_EXISTS = 0x0050;
 
         /// <summary>
         /// Creates a new empty file in a random subdirectory of <see cref="Path.GetTempPath()"/>, using the given prefix and 
@@ -135,7 +135,7 @@ namespace Lucene.Net.Support.IO
                         break;
                     }
                 }
-                catch (IOException e)
+                catch (IOException)
                 {
                     if (File.Exists(fileName))
                     {

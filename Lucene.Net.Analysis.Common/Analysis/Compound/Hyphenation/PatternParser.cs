@@ -45,8 +45,6 @@ namespace Lucene.Net.Analysis.Compound.Hyphenation
 
         internal char hyphenChar;
 
-        internal string errMsg;
-
         internal const int ELEM_CLASSES = 1;
 
         internal const int ELEM_EXCEPTIONS = 2;
